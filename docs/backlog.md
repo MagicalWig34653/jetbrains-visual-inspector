@@ -7,9 +7,10 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 1. **Close phase 1 analysis.** The analysis (`docs/research/feasibility.md`) and the owner answers
    (ADR 0009) exist. ADR 0004 and 0005 carry the owner decisions and stay `Proposed`: 0004 until
    spike 2 has a result, 0005 until bridge protocol v1 (item 4) is tested. Nothing else remains.
-2. **Spike: in-memory location injection** for static HTML via the IDE's built-in web server only
-   (ADR 0009). If it fails, ask the owner before building the plugin-served fallback. Result:
-   measured feasibility recorded in ADR 0004.
+2. **Gate the location injection handler** (spike 2 is done, ADR 0004): `LocationInjectingFileHandler`
+   currently rewrites every HTML page of every project on the built-in server. Restrict it to
+   previews opened by the Visual Inspector (for example a per-preview token or path) before release.
+   Also test an untrusted project and a real browser load.
 3. **Spike: JCEF availability and bridge round trip** with `JBCefJSQuery` in WebStorm and PhpStorm,
    including behavior when JCEF is unsupported. Add the `com.intellij.modules.jcef` dependency and
    the runtime product guard (WebStorm and PhpStorm only, ADR 0009).

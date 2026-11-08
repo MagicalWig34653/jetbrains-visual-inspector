@@ -13,6 +13,12 @@ downloads one. If that download fails, install a JDK 25 or pass one explicitly:
 `./gradlew build -Porg.gradle.java.installations.paths=/path/to/jdk-25/home`, or
 `JDK25_HOME=/path/to/jdk-25/home ./scripts/verify.sh`.
 
+If Foojay and the wrapper download both fail (GitHub release downloads returned HTTP 502 to 504),
+and Docker is available, `scripts/gradle-docker.sh build` runs Gradle in a `eclipse-temurin:25-jdk`
+container. It needs Gradle 9.8.1 cached on the host once and writes to the Docker volume
+`vi-gradle-home`. The `plugin/.intellijPlatform` directory is shared with the host and then holds
+Linux IDE downloads.
+
 Gradle stores its distribution, the JDK toolchain and the downloaded IDEs in `~/.gradle` and
 `plugin/.intellijPlatform`. Expect several gigabytes, more with the Plugin Verifier.
 

@@ -14,4 +14,10 @@
                     anchor="right"
                     factoryClass="io.github.magicalwig34653.visualinspector.toolwindow.InspectorToolWindowFactory"/>
     </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains">
+        <webServerFileHandler
+                implementation="io.github.magicalwig34653.visualinspector.server.LocationInjectingFileHandler"
+                order="first"/>
+    </extensions>
 </idea-plugin>

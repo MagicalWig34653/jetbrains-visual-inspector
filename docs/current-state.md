@@ -51,7 +51,19 @@ findings and stay `Proposed`). It was produced by the `architect` agent from doc
 platform sources; no code or tests were run for it. The owner answered all eight follow-up
 questions (ADR 0009); ADR 0004 and 0005 carry the decisions and stay `Proposed`.
 
+## Spike 2 result (2026-11-08)
+
+Feasible with caveats, recorded in ADR 0004. A `webServerFileHandler` (order first) injects location
+attributes in memory, from the unsaved editor buffer, without writing the file. Fallback not needed.
+Verified in this session with `scripts/gradle-docker.sh test verifyPlugin`: 12 of 12 tests passed
+(`LocationInjectorTest` 7, `PsiOffsetTest` 1, `BuiltInServerInjectionTest` 2, `PluginSmokeTest` 2);
+Plugin Verifier: Compatible with PhpStorm 2026.2.3 and WebStorm 2026.3, no new warnings. Caveats:
+undocumented Netty-typed API; handler not yet gated to inspector previews; untrusted-project and
+real-browser behavior unverified.
+
+Local builds: no JDK 25 on this machine and downloads fail, so the checks above ran in Docker
+(`scripts/gradle-docker.sh`, see `docs/development.md`). `./scripts/verify.sh` was not re-run.
+
 ## Next task
 
-Backlog item 2: spike in-memory location injection via the IDE's built-in web server (ADR 0009),
-then item 3.
+Backlog item 3: JCEF availability and bridge round trip, with the product guard.

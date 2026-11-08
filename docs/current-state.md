@@ -1,6 +1,6 @@
 # Current state
 
-Last updated: 2026-11-08, after project initialization.
+Last updated: 2026-11-08, after the phase 1 feasibility analysis and the owner's answers (ADR 0009).
 
 Repository: <https://github.com/MagicalWig34653/jetbrains-visual-inspector>
 
@@ -44,8 +44,14 @@ HTTP 504 at that point. The run used a checksum-verified Azul Zulu JDK 25.0.5, p
   does not call them. Check this when the real tool window is built (for example with the
   `-Xjvm-default` compiler setting).
 
+## Phase 1 progress
+
+The feasibility analysis is written (`docs/research/feasibility.md`; ADR 0004 and 0005 carry its
+findings and stay `Proposed`). It was produced by the `architect` agent from documentation and
+platform sources; no code or tests were run for it. The owner answered all eight follow-up
+questions (ADR 0009); ADR 0004 and 0005 carry the decisions and stay `Proposed`.
+
 ## Next task
 
-Backlog item 1: feasibility analysis and architecture discussion from section 10 of
-`projektauftrag.md`. It ends with targeted questions to the project owner; do not begin
-implementing features before that discussion.
+Backlog item 2: spike in-memory location injection via the IDE's built-in web server (ADR 0009),
+then item 3.

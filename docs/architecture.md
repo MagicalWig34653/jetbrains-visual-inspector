@@ -47,7 +47,13 @@ JetBrains IDE (plugin/, Kotlin)                 Page (TypeScript)
 - **[V]** HTML PSI exposes tags with source offsets in WebStorm (`PluginSmokeTest`).
 - **[V]** Platform 2026.2 and 2026.3 need Java 25.
   Source: <https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html>
-- **[E]** Whether `CefRequestHandler` based in-memory response rewriting covers local dev servers.
+- **[V]** The bundled JCEF has no response filter (`CefResourceHandler` only), so rewriting responses of
+  external dev servers inside JCEF is not possible; plugin-served content works only for files the plugin
+  serves itself. Source: `docs/research/feasibility.md` section 1.
+- **[V]** The `JBCefJSQuery` handler receives only the message string, no frame or origin.
+- **[P]** Built-in server rewriting via the public `org.jetbrains.webServerFileHandler` extension point
+  (not in SDK docs); decided by spike 2.
+- **[P]** No `plugin.xml` construct restricts to "WebStorm or PhpStorm"; plan is a runtime product guard.
 - **[E]** Which IDE-side endpoint is suitable for external browsers without internal APIs.
 
 ## DOM-to-source mapping
@@ -60,7 +66,7 @@ not navigate to a guess.
 | --- | --- | --- |
 | Static HTML (decided, ADR 0008) | Inject location attributes into the served response in memory, never on disk; served by the IDE's built-in web server, otherwise by the plugin | [E] |
 | Static HTML fallback | Structural match against HTML PSI, with explicit ambiguity handling | [P] |
-| Vanilla PHP (prioritized, ADR 0008) | To be researched: mapping server-rendered output back to `.php` files | [E] |
+| Vanilla PHP (prioritized, ADR 0008) | Optional user-added `auto_prepend_file` rewriting static markup of included files in memory; dynamic strings unmappable (feasibility 2.4) | [E] |
 | Vue | Dev-mode component file metadata, Vite inspector plugins | [P] |
 | Svelte | Dev-mode element location metadata | [P] |
 | React | Dev-mode fiber debug information; changed across React versions | [E] |

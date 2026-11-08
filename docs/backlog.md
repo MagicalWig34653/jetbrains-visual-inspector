@@ -4,21 +4,15 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 
 ## Now: Phase 1
 
-1. **Feasibility analysis and architecture discussion.** Work through section 10 of
-   `projektauftrag.md`: review current APIs; research open-source browser-to-source tools; explain
-   mapping techniques and limits; compare plugin-only with plugin plus browser adapter; rate
-   framework effort; identify risks and prototypes; produce a prioritized plan. Separate proven
-   APIs, plausible approaches and experiments. **End by asking the project owner targeted
-   architecture questions; do not start implementation first.**
-   The owner's product decisions in ADR 0008 are fixed inputs. Also answer: can the IDE's built-in
-   web server rewrite responses in memory through a supported API; how can `plugin.xml` restrict
-   installation to WebStorm and PhpStorm; how can vanilla PHP output be mapped to source.
-   Result: `docs/research/feasibility.md`, updated ADR 0004 and 0005.
-2. **Spike: in-memory location injection** for static HTML, first via the IDE's built-in web
-   server, otherwise via plugin-served content to JCEF (no writes to user files). Result: measured
-   feasibility recorded in ADR 0004.
+1. **Close phase 1 analysis.** The analysis (`docs/research/feasibility.md`) and the owner answers
+   (ADR 0009) exist. ADR 0004 and 0005 carry the owner decisions and stay `Proposed`: 0004 until
+   spike 2 has a result, 0005 until bridge protocol v1 (item 4) is tested. Nothing else remains.
+2. **Spike: in-memory location injection** for static HTML via the IDE's built-in web server only
+   (ADR 0009). If it fails, ask the owner before building the plugin-served fallback. Result:
+   measured feasibility recorded in ADR 0004.
 3. **Spike: JCEF availability and bridge round trip** with `JBCefJSQuery` in WebStorm and PhpStorm,
-   including behavior when JCEF is unsupported.
+   including behavior when JCEF is unsupported. Add the `com.intellij.modules.jcef` dependency and
+   the runtime product guard (WebStorm and PhpStorm only, ADR 0009).
 4. **Define bridge protocol v1** with a validation test suite on both sides.
 
 ## Next: Phase 2
@@ -28,6 +22,9 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 7. Inspector overlay: hover highlight, tooltip, click capture.
 8. Click-to-source navigation for static HTML, with feedback for unmappable elements.
 9. Editor-to-preview highlighting, debounced and configurable.
+10. **Spike: vanilla PHP mapping** at the end of phase 2. Test an optional `auto_prepend_file`
+    script and a plugin-side proxy with structural matching against the `.php` HTML; only HTML
+    elements need a location (ADR 0009). Result decides the PHP mechanism for phase 3.
 
 ## Later
 

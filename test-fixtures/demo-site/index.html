@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual Inspector demo site</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Demo Bakery</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="pages/about.html">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h2>Fresh bread every morning</h2>
+        <p>Click any element in the preview to jump to its source.</p>
+        <button id="order" class="btn">Order now</button>
+      </section>
+
+      <section class="products">
+        <h2>Products</h2>
+        <ul class="product-list">
+          <li class="product"><span class="name">Sourdough</span> <span class="price">4.50</span></li>
+          <li class="product"><span class="name">Baguette</span> <span class="price">2.80</span></li>
+          <li class="product"><span class="name">Rye loaf</span> <span class="price">5.20</span></li>
+        </ul>
+      </section>
+
+      <section class="hours">
+        <h2>Opening hours</h2>
+        <!-- No tbody in the source: browsers add one, so DOM and source differ. -->
+        <table>
+          <tr><th>Day</th><th>Hours</th></tr>
+          <tr><td>Mon-Fri</td><td>6-18</td></tr>
+          <tr><td>Sat-Sun</td><td>7-14</td></tr>
+        </table>
+      </section>
+
+      <section class="generated">
+        <h2>Created by JavaScript</h2>
+        <p>The note below is added at runtime and has no source location.</p>
+        <div id="dynamic-note"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><p>&copy; Demo Bakery</p></footer>
+  </body>
+</html>

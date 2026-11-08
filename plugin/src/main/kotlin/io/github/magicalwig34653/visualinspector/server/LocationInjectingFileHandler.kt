@@ -57,7 +57,9 @@ internal class LocationInjectingFileHandler : WebServerFileHandler() {
             if (request.method() == HttpMethod.HEAD) Unpooled.EMPTY_BUFFER else Unpooled.wrappedBuffer(body))
         response.headers().add(extraHeaders)
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=${file.charset.name()}")
-        response.headers().set(HttpHeaderNames.SET_COOKIE, PreviewGate.setCookieHeader(token))
+        // add, not set: extraHeaders already holds the platform's own auth cookie (BuiltInWebServerAuth), which the
+        // page's stylesheet/script requests need; overwriting it makes every subresource 404.
+        response.headers().add(HttpHeaderNames.SET_COOKIE, PreviewGate.setCookieHeader(token))
         response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-cache, no-store")
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.size)
         val keepAlive = HttpUtil.isKeepAlive(request)

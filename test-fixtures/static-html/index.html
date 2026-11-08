@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Static HTML fixture</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="nested">
+        <div><div><span id="deep">Deeply nested element</span></div></div>
+      </section>
+      <!-- The parser inserts an implicit tbody here, so DOM and source structure differ. -->
+      <table id="implicit-tbody">
+        <tr><td>Cell</td></tr>
+      </table>
+    </main>
+  </body>
+</html>

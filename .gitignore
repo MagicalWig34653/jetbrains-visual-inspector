@@ -1,0 +1,43 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE settings are personal
+.idea/
+*.iml
+.vscode/
+.fleet/
+
+# Gradle, Kotlin and IntelliJ Platform build output
+.gradle/
+.kotlin/
+.intellijPlatform/
+build/
+out/
+
+# Node and TypeScript
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Claude Code: local settings, transcripts and agent state are never versioned
+.claude/settings.local.json
+.claude/projects/
+.claude/agent-memory/
+.claude/agent-memory-local/
+.claude/worktrees/
+*.jsonl
+
+# Logs
+*.log

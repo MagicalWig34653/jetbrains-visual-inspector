@@ -1,0 +1,17 @@
+<idea-plugin>
+    <id>io.github.magicalwig34653.visualinspector</id>
+    <name>Visual Inspector</name>
+    <vendor url="https://github.com/MagicalWig34653/jetbrains-visual-inspector">Visual Inspector contributors</vendor>
+    <description><![CDATA[
+        <p>Bidirectional navigation between rendered web pages and their source code for WebStorm and PhpStorm.</p>
+        <p><b>Early development:</b> this version only contains the project scaffold. Preview and inspector features are not implemented yet.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Visual Inspector"
+                    anchor="right"
+                    factoryClass="io.github.magicalwig34653.visualinspector.toolwindow.InspectorToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

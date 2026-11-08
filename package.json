@@ -1,0 +1,19 @@
+{
+  "name": "jetbrains-visual-inspector",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "browser-extension",
+    "framework-adapters/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck -w browser-extension",
+    "test": "npm test -w browser-extension",
+    "test:hooks": "node --test .claude/hooks/test/*.test.mjs",
+    "check:repo": "node scripts/check-repo.mjs",
+    "check:secrets": "node .claude/hooks/secret-scan.mjs --all"
+  }
+}

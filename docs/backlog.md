@@ -11,9 +11,9 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
    currently rewrites every HTML page of every project on the built-in server. Restrict it to
    previews opened by the Visual Inspector (for example a per-preview token or path) before release.
    Also test an untrusted project and a real browser load.
-3. **Spike: JCEF availability and bridge round trip** with `JBCefJSQuery` in WebStorm and PhpStorm,
-   including behavior when JCEF is unsupported. Add the `com.intellij.modules.jcef` dependency and
-   the runtime product guard (WebStorm and PhpStorm only, ADR 0009).
+3. **Verify the JCEF preview by hand** (spike 3 is coded and compiled, ADR 0004): run `runIde` in
+   WebStorm and PhpStorm and check real rendering, the "received Ping" round trip, the navigation
+   and popup veto and the "Built-in server" button. Headless tests cannot cover JCEF.
 4. **Define bridge protocol v1** with a validation test suite on both sides.
 
 ## Next: Phase 2

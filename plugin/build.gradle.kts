@@ -18,6 +18,7 @@ dependencies {
 
     intellijPlatform {
         webstorm("2026.2.3")
+        bundledPlugin("com.intellij.modules.jcef")
         testFramework(TestFrameworkType.Platform)
     }
 }

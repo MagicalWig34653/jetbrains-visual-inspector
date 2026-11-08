@@ -64,6 +64,17 @@ real-browser behavior unverified.
 Local builds: no JDK 25 on this machine and downloads fail, so the checks above ran in Docker
 (`scripts/gradle-docker.sh`, see `docs/development.md`). `./scripts/verify.sh` was not re-run.
 
+## Spike 3 result (2026-11-08)
+
+Coded and compiled, details in ADR 0004: product guard (WebStorm, PhpStorm), JCEF preview panel
+limited to localhost URLs, `JBCefJSQuery` ping and a closed message validator, dependency on
+`com.intellij.modules.jcef`. Verified in this session with `scripts/gradle-docker.sh test verifyPlugin`:
+27 of 27 tests passed; Plugin Verifier Compatible with PhpStorm 2026.2.3 and WebStorm 2026.3, still
+4 deprecated and 6 experimental usages from the old `ToolWindowFactory` scaffold.
+
+**Not verified:** real JCEF rendering, the bridge round trip, the navigation veto and behavior in
+PhpStorm. No test builds `PreviewPanel`; this needs `runIde` by hand (backlog item 3).
+
 ## Next task
 
-Backlog item 3: JCEF availability and bridge round trip, with the product guard.
+Backlog item 4: bridge protocol v1 with validation tests on both sides.

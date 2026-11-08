@@ -109,3 +109,43 @@ Caveats:
 Recommendation: proceed with this path for the static HTML MVP; no owner decision on the fallback is needed.
 If a later platform release breaks it, the test `BuiltInServerInjectionTest` fails first and the owner would
 then decide on the plugin-served `CefResourceHandler` fallback (ADR 0009).
+
+## Spike 3 result: JCEF preview, bridge round trip, product guard (2026-11-08)
+
+Code: `plugin/src/main/kotlin/.../{product,bridge,preview,toolwindow}`.
+
+Verified (Docker, `scripts/gradle-docker.sh test verifyPlugin`):
+
+- `<depends>com.intellij.modules.jcef</depends>` plus `bundledPlugin("com.intellij.modules.jcef")` in
+  `build.gradle.kts` compiles, loads in the WebStorm 2026.2.3 test IDE, and `verifyPlugin` reports
+  Compatible for PhpStorm 262.10968.76 and WebStorm 263.7307.202. In 2026.2 the module is the bundled plugin
+  `com.intellij.modules.jcef` (`plugins/jcef-plugin`).
+- Public API used: `JBCefBrowser.createBuilder().setUrl().build()`, `JBCefJSQuery.create(JBCefBrowserBase)`,
+  `addHandler`, `inject`, `JBCefClient.addRequestHandler/addLifeSpanHandler/addLoadHandler`
+  (`CefRequestHandlerAdapter.onBeforeBrowse`, `CefLifeSpanHandlerAdapter.onBeforePopup`),
+  `ApplicationInfo.build.productCode`. `JBCefJSQuery.create(JBCefBrowser)` and `Disposer.isDisposed` are
+  deprecated, so they are avoided. `verifyPlugin` usages are unchanged from the scaffold: 4 deprecated and 6
+  experimental, all in `ToolWindowFactory` overrides. No internal API and no new usages.
+- Unit tests, 27 passing in total, 20 new: `ProductGuardTest` (2), `BridgeMessageValidatorTest` (6),
+  `PreviewUrlPolicyTest` (3), `InspectorToolWindowFactoryTest` (4: availability decision, unsupported-IDE and
+  JCEF-unsupported messages, the test IDE is WebStorm).
+- Product guard: product code `WS` or `PS` only; JCEF is never queried in other IDEs.
+- URL policy: only `http` on `localhost` / `127.0.0.1`, no userinfo, no whitespace, at most 2048 chars; the
+  browser may also navigate to `about:blank`. Popups are always vetoed.
+
+NOT verified (needs `runIde` by hand):
+
+- Real JCEF rendering, `JBCefApp.isSupported()` outcome in a real IDE, and the `PreviewPanel` path with a real
+  browser (tests never construct it).
+- The bridge round trip: the load handler injects `window.__viSend`, pings once with `self-check`, and the
+  status line should show "received Ping"; the reply arrives as a `vi-response` DOM event. Not run.
+- Navigation and popup veto (`onBeforeBrowse` also fires for redirects; `window.open` handling in a real page).
+- "Built-in server" button (adds the `_ijt` auth token); behavior in PhpStorm; JBR without JCEF.
+- Registration order: the query is created right after `build()` while the native browser is created lazily,
+  which should avoid the "cefQuery undefined" warning, but this is unproven.
+
+Known limits: the validator is a round-trip proof (`ping`, `hello`), not protocol v1. The guard does not
+block installation elsewhere (option D), it only makes the tool window inert.
+
+Verdict: the approach is feasible and compiles and verifies cleanly against both products; the JCEF part is
+proven only up to compile, load and verifier level until the owner runs `runIde`.

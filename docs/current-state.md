@@ -28,7 +28,8 @@ Results of 2026-11-08 on macOS (arm64):
 | TypeScript tests | `npm test` | Passed, 1 of 1 (toolchain smoke test only) |
 | Plugin build and platform tests | `cd plugin && ./gradlew clean build verifyPlugin` (Gradle 9.8.1 wrapper) | Passed, 2 of 2 |
 | Plugin Verifier | same run | Compatible with PhpStorm 2026.2.3 (262.10968.76) and WebStorm 2026.3 (263.7307.202) |
-| CI on GitHub | `.github/workflows/ci.yml` | See the Actions tab; not confirmed in this file |
+| All local checks | `JDK25_HOME=<jdk> ./scripts/verify.sh --full` | Passed |
+| CI on GitHub | `.github/workflows/ci.yml`, run 42470457728 for commit `393209b` | Passed: both jobs, including Plugin Verifier (Foojay provisioning worked on CI) |
 
 **Limitation:** Foojay could not download JDK 25 locally because GitHub release downloads returned
 HTTP 504 at that point. The run used a checksum-verified Azul Zulu JDK 25.0.5, passed in through

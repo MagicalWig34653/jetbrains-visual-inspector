@@ -27,6 +27,11 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 
 ## Later
 
+- Product scope: `plugin.xml` currently depends only on `com.intellij.modules.platform`, so it
+  installs in any IDE. Decide in phase 1 whether to require WebStorm/PhpStorm features (for example
+  the bundled `JavaScript` plugin) or HTML support explicitly. The PSI smoke test relies on the
+  HTML/XML support bundled in WebStorm.
+
 - Adapter interface and React, Vue, Svelte adapters.
 - Chrome and Firefox extension with an authenticated local channel.
 - PHP, Twig and Blade evaluation.

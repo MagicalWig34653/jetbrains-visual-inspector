@@ -37,6 +37,7 @@ private session files. New session: run `/resume-project`.
 ## Commands
 
 ```bash
+npm ci                       # once after cloning
 ./scripts/verify.sh          # all checks: repo, secrets, hooks, TypeScript, plugin build and tests
 ./scripts/verify.sh --full   # additionally runs the JetBrains Plugin Verifier
 npm run typecheck && npm test
@@ -51,7 +52,9 @@ and acceptance criteria to `architect`, `kotlin-plugin`, `browser-integration`, 
 `docs/agent-workflow.md`.
 
 Skills: `/resume-project`, `/plan-feature`, `/implement-feature`, `/verify-project`,
-`/review-changes`, `/update-project-state`.
+`/review-changes`, `/update-project-state`. Process skills adopted from superpowers:
+`test-driven-development`, `systematic-debugging`, `verification-before-completion`. List and
+sources: `docs/skills.md`.
 
 ## Git
 

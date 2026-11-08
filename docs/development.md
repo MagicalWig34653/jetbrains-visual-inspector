@@ -10,7 +10,8 @@
 
 Gradle needs no installation; use the wrapper. If no JDK 25 is installed, the Foojay resolver
 downloads one. If that download fails, install a JDK 25 or pass one explicitly:
-`./gradlew build -Porg.gradle.java.installations.paths=/path/to/jdk-25/home`.
+`./gradlew build -Porg.gradle.java.installations.paths=/path/to/jdk-25/home`, or
+`JDK25_HOME=/path/to/jdk-25/home ./scripts/verify.sh`.
 
 Gradle stores its distribution, the JDK toolchain and the downloaded IDEs in `~/.gradle` and
 `plugin/.intellijPlatform`. Expect several gigabytes, more with the Plugin Verifier.

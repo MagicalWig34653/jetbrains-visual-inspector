@@ -1,6 +1,9 @@
 package io.github.magicalwig34653.visualinspector.preview
 
+import com.google.gson.GsonBuilder
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
@@ -12,7 +15,12 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.intellij.util.Urls
+import io.github.magicalwig34653.visualinspector.action.PreviewHost
+import io.github.magicalwig34653.visualinspector.bridge.BridgeMessage
 import io.github.magicalwig34653.visualinspector.bridge.BridgeMessageValidator
+import io.github.magicalwig34653.visualinspector.bridge.PageMessageHandler
+import io.github.magicalwig34653.visualinspector.server.InspectorBundle
+import io.github.magicalwig34653.visualinspector.server.PreviewGate
 import io.github.magicalwig34653.visualinspector.bridge.ValidationResult
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
@@ -21,6 +29,7 @@ import org.cef.handler.CefLoadHandlerAdapter
 import org.cef.handler.CefRequestHandlerAdapter
 import org.cef.network.CefRequest
 import org.jetbrains.ide.BuiltInServerManager
+import java.net.URI
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import javax.swing.JButton
@@ -36,25 +45,34 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
     private val query: JBCefJSQuery = JBCefJSQuery.create(browser as JBCefBrowserBase)
     private val status = JBLabel("Bridge: no message yet")
     private val address = JBTextField("http://localhost:63342/")
+    private val token = PreviewGate.newToken()
+    private val host = project.service<PreviewHost>()
+    private val messageHandler: PageMessageHandler = PageMessageHandler(
+        { project.guessProjectDir()?.toNioPath() },
+        IdeEditorOpener(project),
+        IdeUnmappableNotifier(project) { path, offset -> messageHandler.navigate(path, offset, null) },
+    )
+    /** Origin of the last token-bearing URL; later same-origin pages carry the token cookie instead. */
+    @Volatile private var previewOrigin: String? = null
     @Volatile private var disposed = false
     val component: JComponent = JPanel(BorderLayout())
 
     init {
         Disposer.register(parent, this)
+        host.panel = this
         Disposer.register(this, browser)
         Disposer.register(this, query)
 
         query.addHandler { raw ->
-            when (val r = BridgeMessageValidator.validate(raw)) {
-                is ValidationResult.Valid -> {
-                    setStatus("Bridge: received ${r.message::class.simpleName}")
-                    JBCefJSQuery.Response(BridgeMessageValidator.ackFor(r.message))
-                }
-                is ValidationResult.Rejected -> {
-                    setStatus("Bridge: dropped a message (${r.code.wire})")
-                    JBCefJSQuery.Response(BridgeMessageValidator.errorReply(r.code))
-                }
+            val reply = messageHandler.handle(raw)
+            BridgeMessageValidator.validate(raw).let { r ->
+                if (r is ValidationResult.Valid) {
+                    val m = r.message
+                    if (m is BridgeMessage.Navigate) host.lastNavigate = m
+                    setStatus("Bridge: received ${m::class.simpleName}")
+                } else if (r is ValidationResult.Rejected) setStatus("Bridge: dropped a message (${r.code.wire})")
             }
+            JBCefJSQuery.Response(reply)
         }
 
         val client = browser.jbCefClient
@@ -70,14 +88,17 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         client.addLoadHandler(object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(b: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                 if (frame?.isMain != true || !PreviewUrlPolicy.isAllowedTarget(frame.url)) return
-                // Defines window.__viSend(jsonString); then the page says hello once as the round-trip proof.
+                // Only previews opened with our token get the inspector (the same token gates attribute injection).
+                if (originOf(frame.url) != previewOrigin) return
+                val bundle = InspectorBundle.source
+                if (bundle == null) { setStatus(InspectorBundle.MISSING_MESSAGE); return }
                 val send = query.inject(
                     "msg",
-                    "function(r){window.dispatchEvent(new CustomEvent('vi-response',{detail:r}));}",
-                    "function(c,m){window.dispatchEvent(new CustomEvent('vi-error',{detail:c}));}",
+                    "function(r){}",
+                    "function(c,m){}",
                 )
                 b?.executeJavaScript(
-                    "window.__viSend=function(msg){$send};window.__viSend('{\"v\":1,\"type\":\"hello\",\"id\":\"self-check\"}');",
+                    "window.__viSend=function(msg){$send};" + InspectorBundle.bootstrap(bundle),
                     frame.url, 0,
                 )
             }
@@ -106,20 +127,58 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
     private fun loadBuiltInServer() {
         ApplicationManager.getApplication().executeOnPooledThread {
             val manager = BuiltInServerManager.getInstance()
-            val base = "http://127.0.0.1:${manager.waitForStart().port}/${project.name}/"
-            val url = Urls.parseEncoded(base)?.let { manager.addAuthToken(it).toExternalForm() } ?: base
+            val url = previewUrl(null)
             ApplicationManager.getApplication().invokeLater({
                 if (!disposed) {
                     address.text = url
+                    previewOrigin = originOf(url)
                     load(url)
                 }
             }, ModalityState.any())
         }
     }
 
+    /** Built-in server URL (with IDE auth token and preview token) of a project-relative file, or the project root. */
+    private fun previewUrl(relativePath: String?): String {
+        val manager = BuiltInServerManager.getInstance()
+        val path = "/" + project.name + "/" + (relativePath ?: "")
+        val base = "http://127.0.0.1:${manager.waitForStart().port}" + URI(null, null, path, null).rawPath
+        // addAuthToken replaces any query, so the preview token is appended after it.
+        val authed = Urls.parseEncoded(base)?.let { manager.addAuthToken(it).toExternalForm() } ?: base
+        return authed + (if ('?' in authed) "&" else "?") + "${PreviewGate.PARAM}=$token"
+    }
+
+    /** Opens a project HTML file in the preview. Safe to call from the EDT. */
+    fun openFile(relativePath: String) {
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val url = previewUrl(relativePath)
+            ApplicationManager.getApplication().invokeLater({
+                if (!disposed) {
+                    address.text = url
+                    previewOrigin = originOf(url)
+                    load(url)
+                }
+            }, ModalityState.any())
+        }
+    }
+
+    /** IDE to page message (already built by the validated serializer). */
+    fun sendToPage(message: BridgeMessage) {
+        val json = BridgeMessageValidator.serialize(message)
+        browser.cefBrowser.executeJavaScript(
+            "if(window.__viReceive)window.__viReceive(${GsonBuilder().create().toJson(json)});", PreviewUrlPolicy.BLANK, 0)
+    }
+
+    private fun originOf(url: String?): String? =
+        try { URI(url ?: return null).let { "${it.scheme}://${it.host}:${it.port}" } } catch (e: java.net.URISyntaxException) { null }
+
     private fun setStatus(text: String) {
         ApplicationManager.getApplication().invokeLater({ if (!disposed) status.text = text }, ModalityState.any())
     }
 
-    override fun dispose() { disposed = true }
+    override fun dispose() {
+        disposed = true
+        PreviewGate.revoke(token)
+        if (host.panel === this) host.panel = null
+    }
 }

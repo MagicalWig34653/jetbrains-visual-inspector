@@ -16,6 +16,25 @@
                     factoryClass="io.github.magicalwig34653.visualinspector.toolwindow.InspectorToolWindowFactory"/>
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Visual Inspector" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="VisualInspector.Group" text="Visual Inspector" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <action id="VisualInspector.OpenInInspector"
+                    class="io.github.magicalwig34653.visualinspector.action.OpenInInspectorAction"
+                    text="Open Current HTML File in Visual Inspector"/>
+            <action id="VisualInspector.HighlightInPreview"
+                    class="io.github.magicalwig34653.visualinspector.action.HighlightInPreviewAction"
+                    text="Highlight in Visual Inspector Preview"/>
+            <action id="VisualInspector.NextInstance"
+                    class="io.github.magicalwig34653.visualinspector.action.NextInstanceAction"
+                    text="Next Instance in Visual Inspector Preview"/>
+        </group>
+    </actions>
+
     <extensions defaultExtensionNs="org.jetbrains">
         <webServerFileHandler
                 implementation="io.github.magicalwig34653.visualinspector.server.LocationInjectingFileHandler"

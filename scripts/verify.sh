@@ -28,6 +28,9 @@ npm run --silent typecheck
 step "TypeScript tests"
 npm --silent test
 
+step "Inspector bundle (packaged into the plugin)"
+npm run --silent build:inspector -w browser-extension
+
 step "Plugin build and tests"
 (cd plugin && ./gradlew "${GRADLE_ARGS[@]}" build)
 

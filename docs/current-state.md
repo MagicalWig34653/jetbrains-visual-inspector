@@ -85,7 +85,21 @@ Verified in this session: `npm test` 214 of 214, `npm run typecheck` clean,
 products. ADR 0005 is now `Accepted`. Known difference: Kotlin rejects `1.0` and duplicate keys, TS
 accepts `1.0` (no vector covers it).
 
+## Phase 2 MVP wiring (2026-11-08)
+
+Coded: in-page overlay (`browser-extension/src/inspector/`), gated injection (`PreviewGate`), click to
+source (`PageMessageHandler`, `ProjectPathResolver`, `OpenFileDescriptor`), editor actions
+"Highlight in Visual Inspector Preview", "Next Instance ..." and "Open Current HTML File in Visual
+Inspector" (no default shortcut, no caret listener, ADR 0009). Verified in this session:
+`npm test` 224 of 224, `npm run typecheck` clean, `scripts/gradle-docker.sh test verifyPlugin`
+41 of 41 Kotlin tests, Plugin Verifier Compatible with PhpStorm 2026.2.3 and WebStorm 2026.3.
+
+**Not verified (needs `runIde` by hand):** real JCEF rendering, bootstrap JS and query transport,
+Alt+click navigation, highlight and next-instance on the page, the unmappable balloon, cookie-based
+link following, the Open action, the missing-bundle message. The overlay DOM layer has no test.
+The Phase 2 exit criterion (automated tests of both directions on the fixture) is therefore not met.
+
 ## Next task
 
-Phase 2, backlog item 5 onward: inspector overlay in the page, click-to-source navigation for static
-HTML and editor-to-preview highlighting. Gate the injection handler to inspector previews first.
+Owner: start `runIde` (needs JDK 25) and try the manual checklist above. Then: end-to-end tests where
+possible, PHP spike (backlog item 10), default keymap entries.

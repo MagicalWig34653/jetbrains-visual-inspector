@@ -43,3 +43,19 @@ tasks.test {
     // Shared protocol vectors live outside plugin/ (repo root: test-fixtures/protocol/vectors.json).
     systemProperty("visualinspector.protocolVectors", rootProject.projectDir.resolve("../test-fixtures/protocol/vectors.json").canonicalPath)
 }
+
+// The inspector bundle is built by npm (browser-extension/dist, git-ignored) and packaged when present, so the
+// Gradle build itself never needs node. The plugin reports a missing bundle at runtime.
+val inspectorDist = rootProject.projectDir.resolve("../browser-extension/dist")
+tasks.processResources {
+    from(inspectorDist) {
+        include("inspector.js")
+        into("visualinspector")
+    }
+    val bundleFile = inspectorDist.resolve("inspector.js")
+    doLast {
+        if (!bundleFile.exists()) {
+            logger.warn("WARNING: browser-extension/dist/inspector.js missing; run 'npm run build:inspector -w browser-extension'. The preview will not inspect.")
+        }
+    }
+}

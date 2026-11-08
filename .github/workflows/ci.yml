@@ -54,6 +54,15 @@ jobs:
           distribution: zulu
           java-version: 25
       - uses: gradle/actions/setup-gradle@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build inspector bundle (packaged into the plugin)
+        working-directory: .
+        run: |
+          npm ci
+          npm run build:inspector -w browser-extension
       - name: Build and test
         run: ./gradlew build
       - name: Verify plugin compatibility

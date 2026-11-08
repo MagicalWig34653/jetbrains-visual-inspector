@@ -49,12 +49,22 @@ npm run test:hooks            # tests for the Claude Code hooks
 npm run check:repo            # agent setup and required documents
 npm run check:secrets         # secret scan over tracked files
 
+npm run build:inspector -w browser-extension   # before the plugin build; see below
+
 cd plugin
 ./gradlew build               # compile, test, package to build/distributions/
 ./gradlew test
 ./gradlew verifyPlugin
 ./gradlew runIde              # start a sandbox WebStorm with the plugin
 ```
+
+## Inspector bundle in the plugin
+
+The plugin serves `browser-extension/dist/inspector.js` (git-ignored). Run
+`npm run build:inspector -w browser-extension` on the host before `./gradlew build` or `runIde`;
+Gradle copies the file into the plugin resources `visualinspector/` if it exists, so Gradle itself
+(and `scripts/gradle-docker.sh`) never needs node. If it is missing, Gradle prints a warning and the
+preview shows "inspector.js is not packaged" instead of inspecting. CI and `scripts/verify.sh` build it first.
 
 ## Layout
 

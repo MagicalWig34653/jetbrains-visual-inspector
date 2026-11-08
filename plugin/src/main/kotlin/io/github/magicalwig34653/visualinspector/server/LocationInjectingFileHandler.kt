@@ -26,7 +26,7 @@ import org.jetbrains.builtInWebServer.WebServerFileHandler
  * Registered with `order="first"`, so it runs before the platform `StaticFileHandler`. The unsaved editor
  * `Document` wins over the file on disk; the user's file is never written.
  *
- * Spike scope: applies to every HTML page of every project served by the built-in server.
+ * Gated: only requests carrying a live preview token (see [PreviewGate]) are handled; others return false.
  */
 internal class LocationInjectingFileHandler : WebServerFileHandler() {
     override val pageFileExtensions = listOf("html", "htm")
@@ -40,6 +40,8 @@ internal class LocationInjectingFileHandler : WebServerFileHandler() {
         projectNameIfNotCustomHost: String?,
         extraHeaders: HttpHeaders,
     ): Boolean {
+        // Gate (ADR 0009): only Inspector previews get injection; all other requests fall through unmodified.
+        val token = PreviewGate.tokenOf(request.uri(), request.headers().get(HttpHeaderNames.COOKIE)) ?: return false
         val file = pathInfo.getOrResolveVirtualFile() ?: return false
         if (file.isDirectory || file.extension?.lowercase() !in pageFileExtensions) return false
 
@@ -55,6 +57,7 @@ internal class LocationInjectingFileHandler : WebServerFileHandler() {
             if (request.method() == HttpMethod.HEAD) Unpooled.EMPTY_BUFFER else Unpooled.wrappedBuffer(body))
         response.headers().add(extraHeaders)
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=${file.charset.name()}")
+        response.headers().set(HttpHeaderNames.SET_COOKIE, PreviewGate.setCookieHeader(token))
         response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-cache, no-store")
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.size)
         val keepAlive = HttpUtil.isKeepAlive(request)

@@ -22,13 +22,16 @@ class BuiltInServerInjectionTest : HeavyPlatformTestCase() {
 
     private val attr = Regex("""<(\w+) data-vi-src="([^":]+):(\d+)"""")
 
-    private fun url(withToken: Boolean): String {
+    private fun url(withToken: Boolean, preview: String? = null): String {
         val base = "http://127.0.0.1:${BuiltInServerManager.getInstance().waitForStart().port}/${project.name}/index.html"
-        return if (withToken) BuiltInServerManager.getInstance().addAuthToken(Urls.parseEncoded(base)!!).toExternalForm() else base
+        val authed = if (withToken) BuiltInServerManager.getInstance().addAuthToken(Urls.parseEncoded(base)!!).toExternalForm() else base
+        // addAuthToken does not keep a query, so the preview token is appended afterwards (as PreviewPanel does)
+        return if (preview == null) authed else authed + (if ('?' in authed) "&" else "?") + "${PreviewGate.PARAM}=$preview"
     }
 
-    private fun get(withToken: Boolean): Pair<Int, String> {
-        val c = URI(url(withToken)).toURL().openConnection() as HttpURLConnection
+    private fun get(withToken: Boolean, preview: String? = null, cookie: String? = null): Pair<Int, String> {
+        val c = URI(url(withToken, preview)).toURL().openConnection() as HttpURLConnection
+        if (cookie != null) c.setRequestProperty("Cookie", cookie)
         val code = c.responseCode
         return code to ((if (code < 400) c.inputStream else c.errorStream)?.readBytes()?.toString(Charsets.UTF_8) ?: "")
     }
@@ -48,7 +51,8 @@ class BuiltInServerInjectionTest : HeavyPlatformTestCase() {
         WriteCommandAction.runWriteCommandAction(project) { document.insertString(0, "<!-- unsaved -->\n") }
         assertTrue(FileDocumentManager.getInstance().isDocumentUnsaved(document))
 
-        val (status, body) = get(true)
+        val token = PreviewGate.newToken()
+        val (status, body) = get(true, token)
         println("SPIKE2 project=${project.name} base=${project.basePath} status=$status\n$body")
         assertEquals(200, status)
         assertTrue("unsaved buffer text expected", body.contains("<!-- unsaved -->"))
@@ -66,5 +70,25 @@ class BuiltInServerInjectionTest : HeavyPlatformTestCase() {
         println("SPIKE2 no-token status=$status")
         assertTrue(status >= 400)
         assertFalse(body.contains("data-vi-src"))
+    }
+
+    fun testGatingOnlyPreviewTokenGetsInjection() {
+        val file = createIndex()
+        val token = PreviewGate.newToken()
+        try {
+            val (s1, plain) = get(true)
+            assertEquals(200, s1)
+            assertFalse("no preview token: unmodified file", plain.contains("data-vi-src"))
+            assertEquals(fixture, plain)
+            val (_, wrong) = get(true, "not-a-token")
+            assertFalse(wrong.contains("data-vi-src"))
+            assertTrue(get(true, token).second.contains("data-vi-src"))
+            assertTrue("cookie carries the preview token", get(true, cookie = "other=1; ${PreviewGate.PARAM}=$token").second.contains("data-vi-src"))
+            PreviewGate.revoke(token)
+            assertFalse("revoked token", get(true, token).second.contains("data-vi-src"))
+        } finally {
+            PreviewGate.revoke(token)
+        }
+        assertEquals(fixture, String(file.contentsToByteArray()))
     }
 }

@@ -7,17 +7,14 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 1. **Close phase 1 analysis.** The analysis (`docs/research/feasibility.md`) and the owner answers
    (ADR 0009) exist. ADR 0004 and 0005 carry the owner decisions and stay `Proposed`: 0004 until
    spike 2 has a result, 0005 until bridge protocol v1 (item 4) is tested. Nothing else remains.
-2. **Gate the location injection handler** (spike 2 is done, ADR 0004): `LocationInjectingFileHandler`
-   currently rewrites every HTML page of every project on the built-in server. Restrict it to
-   previews opened by the Visual Inspector (for example a per-preview token or path) before release.
-   Also test an untrusted project and a real browser load.
+2. ~~Gate the injection handler~~ done (`PreviewGate`, per-preview token). Untrusted-project and real-browser behavior remain untested.
 3. **Verify the JCEF preview by hand** (spike 3 is coded and compiled, ADR 0004): run `runIde` in
    WebStorm and PhpStorm and check real rendering, the "received Ping" round trip, the navigation
    and popup veto and the "Built-in server" button. Headless tests cannot cover JCEF.
 
 ## Next: Phase 2
 
-5. JCEF preview tool window replacing the placeholder.
+5. ~~JCEF preview tool window~~ coded, needs manual `runIde` check (item 3).
 6. ~~Project-confined source location validator~~ done with protocol v1 (`ProjectPathResolver`); wire it into navigation in item 8.
 7. Inspector overlay: hover highlight, tooltip, click capture.
 8. Click-to-source navigation for static HTML, with feedback for unmappable elements.

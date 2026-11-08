@@ -31,6 +31,9 @@ npm --silent test
 step "Inspector bundle (packaged into the plugin)"
 npm run --silent build:inspector -w browser-extension
 
+step "PHP support spike check (skips without Docker or php)"
+php-support/tests/check.sh
+
 step "Plugin build and tests"
 (cd plugin && ./gradlew "${GRADLE_ARGS[@]}" build)
 

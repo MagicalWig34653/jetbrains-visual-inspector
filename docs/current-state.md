@@ -99,6 +99,16 @@ Alt+click navigation, highlight and next-instance on the page, the unmappable ba
 link following, the Open action, the missing-bundle message. The overlay DOM layer has no test.
 The Phase 2 exit criterion (automated tests of both directions on the fixture) is therefore not met.
 
+## PHP spike (2026-11-08)
+
+Verdict feasible with caveats (ADR 0004, "Spike 5 result"). `php-support/visual-inspector-prepend.php`
+rewrites static markup of included `.php` files in memory. Verified in this session with
+`sh php-support/tests/check.sh` (Docker `php:8.5-cli`, opcache off and on): PASS, 23 tags and 31
+attributes match independently computed offsets; HTML echoed from PHP strings gets no location. Limits:
+offsets come from the file on disk, not the unsaved buffer; a UTF-8 BOM may shift offsets; opcache keeps
+rewritten code, so toggling needs a restart. Not yet integrated into the plugin. `./scripts/verify.sh`
+was not re-run.
+
 ## Manual test results (owner, 2026-11-08, `runIde`)
 
 Confirmed by hand: preview renders with styling (after fixing a cookie bug that made the built-in
@@ -116,5 +126,6 @@ test project: `test-fixtures/demo-site` (open as its own project).
 
 ## Next task
 
-PHP spike (backlog item 10). Then: automated end-to-end coverage where possible, Phase 2 exit
-criteria, a check in PhpStorm.
+Phase 3, first item: integrate PHP into the preview (the inspector bootstrap currently runs only for
+the built-in server origin; a user-run `php -S` origin needs the same trust rule, ADR 0005/0009).
+Then: Phase 2 exit criteria (automated end-to-end coverage), a check in PhpStorm.

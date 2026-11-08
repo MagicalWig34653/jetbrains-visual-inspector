@@ -19,9 +19,7 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 7. Inspector overlay: hover highlight, tooltip, click capture.
 8. Click-to-source navigation for static HTML, with feedback for unmappable elements.
 9. Editor-to-preview highlighting, debounced and configurable.
-10. **Spike: vanilla PHP mapping** at the end of phase 2. Test an optional `auto_prepend_file`
-    script and a plugin-side proxy with structural matching against the `.php` HTML; only HTML
-    elements need a location (ADR 0009). Result decides the PHP mechanism for phase 3.
+10. ~~PHP spike~~ done (ADR 0004): the `auto_prepend_file` stream wrapper in `php-support/` works, the plugin proxy is not worth building. Next: integrate it (phase 3, first item).
 
 ## Later
 

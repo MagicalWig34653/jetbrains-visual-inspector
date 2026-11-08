@@ -7,3 +7,4 @@ no real user data.
 | --- | --- | --- |
 | `static-html/` | not yet used (roadmap phase 2) | Nesting and DOM normalization cases for static HTML mapping |
 | `demo-site/` | manual testing | Open as its own project in WebStorm or PhpStorm and try the preview: CSS and JS assets, a second page, repeated items, a table without `tbody`, JS-created elements |
+| `php-site/` | `php-support/tests/check.sh` | Vanilla PHP spike: includes, loops, string-echoed HTML, split tags, `vendor/` exclusion |

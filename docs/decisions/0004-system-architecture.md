@@ -149,3 +149,92 @@ block installation elsewhere (option D), it only makes the tool window inert.
 
 Verdict: the approach is feasible and compiles and verifies cleanly against both products; the JCEF part is
 proven only up to compile, load and verifier level until the owner runs `runIde`.
+
+## Spike 5 result (2026-11-08): vanilla PHP mapping
+
+Goal: only HTML elements need a source location (ADR 0009). Two mechanisms were compared. Code:
+`php-support/visual-inspector-prepend.php` (about 310 lines, no dependencies), fixture
+`test-fixtures/php-site/`, check `php-support/tests/check.sh` + `assert.mjs`, wired into
+`scripts/verify.sh` (skips with exit 0 when neither the Docker image nor a host php 8+ exists).
+
+### A) Prepend script with stream wrapper (built and run)
+
+Mechanism: `auto_prepend_file` registers a user-space `file://` wrapper. For includes of project `.php`
+files, `token_get_all` finds `T_INLINE_HTML`, a small scanner (same rules as `LocationInjector`: skips
+comments, doctype, end tags, raw text of `script`/`style`/`textarea`/`title`) adds
+`data-vi-src="rel/path.php:OFFSET"` after the tag name, and the rewritten source is compiled from memory.
+Guards: off unless `VISUAL_INSPECTOR_DEV=1` (or ini `visual_inspector.dev=1`); only `.php` files whose
+realpath is inside `VISUAL_INSPECTOR_ROOT` (default: document root), never under `vendor/` or
+`node_modules/`; files over 2 MB and any rewrite error fall back to the original source; the script has no
+write calls (its other wrapper methods only forward the application's own file calls to the native wrapper).
+
+Verified (run in `php:8.5-cli`, `php -S`, fixture mounted read-only, curl; PASS):
+
+- Disabled without the env value: no attribute anywhere. Enabled: page with attributes minus the attributes is
+  byte-identical to the disabled page (nothing else changed); line numbers unchanged.
+- 23 distinct start tags checked, 31 attributes in the page, exact total (no extras). Offsets equal an
+  independent computation (JS `indexOf` of the literal tag in the file, UTF-16 units, LF-normalized) for
+  `index.php` and the partials `header.php`, `footer.php`, `card.php`, including a tag after a line with
+  non-ASCII text and a surrogate pair (emoji).
+- Loops: the inline `foreach` renders `li`/`span` 3 times with the identical location each time; a partial
+  included 3 times in a loop gives the identical `partials/card.php:0` three times.
+- Not mapped, no attribute (as designed): `echo "<li ...>"` (3x), `<?= '<i id=..>' ?>` string output,
+  `vendor/lib.php`, a file outside the project root (the include itself still ran), a tag inside an HTML
+  comment, text inside `<title>` that spans a PHP block.
+- Tag split across PHP blocks (`<div id="split" <?php ... ?>>`), quote spanning a PHP block with `>` in a
+  value, mixed case (`<DIV ID=..>`), `<?= ?>` short echo: mapped correctly.
+- `opcache.enable_cli=1`, three requests: opcache reported enabled, all project files cached (including the
+  prepend script) and hits rising (13); pages identical to the non-opcache run. Files in the fixture
+  unchanged (hash before/after, plus read-only mount).
+- Ad hoc (not in the check): CRLF files give offsets as if LF (matches the IDE `Document`); a file with a PHP
+  syntax error still tokenizes; 920 KB template with 40000 tags rewrites in 58 ms; `index.php` about 0.04 ms.
+  With opcache the cost is paid once per file change.
+
+Failures and surprises found on the way:
+
+- `STREAM_OPEN_FOR_INCLUDE` is documented but not defined in userland PHP 8.5 (fatal "undefined constant");
+  the script uses its source value `0x80`. This depends on an internal flag value; the check would catch a
+  change.
+- Docker VMs may not share the host temp dir (colima shares only the home tree); the check keeps its temp
+  files under `php-support/tests/` for that reason.
+
+Limits (honest user statement: only static markup in `.php` files is mappable):
+
+- Markup produced by `echo`, heredocs, `printf` or template engines (Twig, Blade, any compiled or cached
+  template) gets no attribute. A tag whose name is split by PHP gets none.
+- Offsets refer to the file on disk. Unsaved editor text and a file edited after the page was rendered give
+  stale offsets until reload; the plugin cannot serve PHP from the editor buffer. A UTF-8 BOM probably shifts
+  offsets by one (not verified against the IDE).
+- Opcache keeps the rewritten code: toggling the env value or editing the script needs an opcache reset or a
+  server restart. With `validate_timestamps=0` edited files also stay stale (normal opcache behavior).
+- Rewriting changes the response: pages that hash or validate their own HTML, or output JSON/XML from `.php`
+  files, can break (the scanner only touches tags in inline HTML, so JSON echoed from PHP code is safe, but an
+  inline-HTML fragment returned to an AJAX caller gets attributes too).
+- User setup needed: one `auto_prepend_file` value and one env value, in dev only. The root default is the
+  document root; a project root above it (where `vendor/` lives) needs `VISUAL_INSPECTOR_ROOT`. Paths in
+  Docker or remote setups map only if the container sees the same relative layout (relative paths are used,
+  so this mostly works; the IDE side must resolve them against the project root).
+- Not tested: php-fpm/Apache, PHP below 8.5, Windows paths, frameworks that include via custom autoloaders
+  (works the same, they use `include`), `eval`, files with `declare(strict_types)` first-line rules (the
+  rewrite does not touch PHP tokens).
+
+### B) Plugin-side proxy / structural matching (paper only, not built)
+
+It would need: a reverse proxy in the plugin in front of the user's PHP server (new port, forwarding of
+cookies, redirects, WebSocket, streaming; this is more surface than the built-in server hook), HTML parsing
+of every response, and per element a match against the HTML PSI of the `.php` files (tag, id, classes,
+text, sibling order). Dynamic text and includes make matches ambiguous; loops make one location many
+elements (already handled by "highlight all"), but includes and conditionals make the candidate file
+unknown, so it would guess among several files. ADR 0009 forbids silent guesses, so it could only offer
+"candidates" lists. It cannot tell which of several identical `<li>` partials rendered an element. Cost is
+high (proxy plus matcher plus ambiguity UI) and the result is strictly less exact than A. Measured: nothing;
+no proxy was built.
+
+### Verdict and recommendation
+
+Feasible with caveats for A; B is not worth building for vanilla PHP. Recommend A as the exact mechanism,
+shipped as an optional, documented dev-only script (copy or Composer-free include), with the plugin treating
+elements without an attribute as unmappable and offering the nearest mapped ancestor (ADR 0009). B stays a
+possible later fallback only for users who cannot add a prepend value. Follow-ups for phase 3: IDE-side
+resolution of PHP relative paths and PhpStorm `PsiFile` offsets (BOM, CRLF), UX text for "mapped from disk
+version", an opcache/restart hint in the docs, and a test in PhpStorm of the real round trip.

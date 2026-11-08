@@ -104,8 +104,9 @@ The Phase 2 exit criterion (automated tests of both directions on the fixture) i
 Confirmed by hand: preview renders with styling (after fixing a cookie bug that made the built-in
 server answer asset requests with 404; test `testSubresourcesOfPreviewedPageLoadWithCookiesOnly`),
 Alt+click toggles inspect mode, hover frame appears, click moves the editor caret to the source.
-Not yet confirmed: editor-to-preview highlight, "Next Instance", the unmappable notification, the
-Inspect toggle button, PhpStorm.
+After the later changes the owner also confirmed (WebStorm, `test-fixtures/demo-site`): highlight and
+"Next Instance" from the editor, the unmappable notification and the Inspect toggle. Both directions
+work for static HTML. Not yet confirmed: PhpStorm.
 
 Changes after that feedback (verified: `npm test` 224 of 224, `scripts/gradle-docker.sh test verifyPlugin`
 43 of 43, Verifier Compatible with both products): inspect mode starts on with a toolbar toggle,
@@ -115,5 +116,5 @@ test project: `test-fixtures/demo-site` (open as its own project).
 
 ## Next task
 
-Owner: retry the highlight shortcut and the toggle in `runIde`. Then: PHP spike (backlog item 10),
-automated end-to-end coverage where possible, Phase 2 exit criteria.
+PHP spike (backlog item 10). Then: automated end-to-end coverage where possible, Phase 2 exit
+criteria, a check in PhpStorm.

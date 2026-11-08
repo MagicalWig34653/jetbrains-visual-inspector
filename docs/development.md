@@ -86,3 +86,10 @@ preview shows "inspector.js is not packaged" instead of inspecting. CI and `scri
 - `plugin`: Gradle wrapper validation, build with tests, Plugin Verifier.
 
 No release or Marketplace jobs exist, deliberately.
+
+## Visual Inspector shortcuts
+
+Default (all keymaps incl. macOS): `Ctrl+Alt+Shift+.` Highlight in Visual Inspector Preview, `Ctrl+Alt+Shift+,`
+Next Instance. Chosen from punctuation keys because the letter combos with these modifiers are mostly taken;
+not machine-checked against the keymap. Rebind under Settings > Keymap if the IDE reports a conflict.
+Inspect mode starts on; the toolbar "Inspect" toggle and Alt+click in the page both switch it and stay in sync.

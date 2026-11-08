@@ -17,3 +17,12 @@ object HighlightTarget {
         return if (count != null && count > 0) next % count else next.coerceAtMost(9999)
     }
 }
+
+/** Why a highlight could not be sent; the text is shown in a non-modal notification. */
+object HighlightMessages {
+    const val NO_PREVIEW = "No Visual Inspector preview is open. Open the tool window and use \"Open Current HTML File in Visual Inspector\"."
+    const val NO_TAG = "The caret is not inside an HTML tag that has a source location."
+    fun notServed(rel: String, shown: String?) =
+        "The preview is " + (if (shown == null) "not showing a page served by the IDE" else "showing $shown") +
+            ", not $rel. Use \"Open Current HTML File in Visual Inspector\"."
+}

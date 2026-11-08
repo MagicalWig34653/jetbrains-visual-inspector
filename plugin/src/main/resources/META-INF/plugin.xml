@@ -28,10 +28,18 @@
                     text="Open Current HTML File in Visual Inspector"/>
             <action id="VisualInspector.HighlightInPreview"
                     class="io.github.magicalwig34653.visualinspector.action.HighlightInPreviewAction"
-                    text="Highlight in Visual Inspector Preview"/>
+                    text="Highlight in Visual Inspector Preview">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift PERIOD"/>
+                <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl alt shift PERIOD"/>
+                <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl alt shift PERIOD"/>
+            </action>
             <action id="VisualInspector.NextInstance"
                     class="io.github.magicalwig34653.visualinspector.action.NextInstanceAction"
-                    text="Next Instance in Visual Inspector Preview"/>
+                    text="Next Instance in Visual Inspector Preview">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift COMMA"/>
+                <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl alt shift COMMA"/>
+                <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl alt shift COMMA"/>
+            </action>
         </group>
     </actions>
 

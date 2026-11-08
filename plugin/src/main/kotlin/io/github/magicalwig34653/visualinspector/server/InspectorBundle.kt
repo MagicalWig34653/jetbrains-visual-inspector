@@ -11,7 +11,8 @@ object InspectorBundle {
         InspectorBundle::class.java.getResourceAsStream(RESOURCE)?.use { it.readBytes().toString(Charsets.UTF_8) }
     }
 
-    /** Page bootstrap: the bundle, then a transport bound to `window.__viSend` (JCEF query, set up by the host). */
+    /** Page bootstrap: the bundle, then a transport bound to `window.__viSend` (JCEF query, set up by the host).
+     * Inspect mode starts ON; `window.__viReceive.mode(bool)` is the host's toggle (a property, not a new global). */
     fun bootstrap(bundle: String): String = """
 (function(){
 if(window.__viStarted)return;
@@ -20,10 +21,13 @@ $bundle
 window.__viStarted=true;
 var recv=null;
 window.__viReceive=function(m){if(recv&&typeof m==='string')recv(m);};
-window.startInspector({
+var h=window.startInspector({
   send:function(m){try{window.__viSend(m);}catch(e){}},
-  subscribe:function(r){recv=r;return function(){recv=null;};}
+  subscribe:function(r){recv=r;return function(){recv=null;};},
+  modeChanged:function(o){try{window.__viSend.mode(o?'1':'0');}catch(e){}}
 });
+window.__viReceive.mode=function(o){h.setInspectMode(!!o);};
+h.setInspectMode(true);
 })();
 """
 }

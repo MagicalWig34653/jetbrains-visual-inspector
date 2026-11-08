@@ -12,6 +12,8 @@ export interface Transport {
   send(message: string): void;
   /** Optional: register a receiver for serialized IDE messages. Returns an unsubscribe function. */
   subscribe?(receive: (message: string) => void): () => void;
+  /** Optional: told whenever inspect mode changes (Alt+click or setInspectMode), so a host toolbar can follow. */
+  modeChanged?(on: boolean): void;
 }
 
 export interface InspectorHandle {
@@ -155,6 +157,11 @@ export function startInspector(transport: Transport): InspectorHandle {
   function setInspectMode(on: boolean): void {
     if (disposed || on === inspect) return;
     inspect = on;
+    try {
+      transport.modeChanged?.(on);
+    } catch {
+      // host failure must not break the page
+    }
     if (on) {
       win.addEventListener("pointermove", onMove, true);
     } else {

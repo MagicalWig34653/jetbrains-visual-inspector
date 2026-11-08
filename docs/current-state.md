@@ -109,6 +109,17 @@ offsets come from the file on disk, not the unsaved buffer; a UTF-8 BOM may shif
 rewritten code, so toggling needs a restart. Not yet integrated into the plugin. `./scripts/verify.sh`
 was not re-run.
 
+## PHP in the preview (2026-11-08)
+
+Coded (ADR 0010, `docs/php.md`): external localhost origins run the overlay only after the user
+confirms that exact origin once ("Trust this origin", stored per project, revocable); the bridge also
+answers `denied` for untrusted origins; highlight works on `.php` files via the HTML PSI view.
+Verified in this session: `scripts/gradle-docker.sh test verifyPlugin`, 51 of 51 tests, Verifier
+Compatible with both products. **Not verified:** the whole flow in a real IDE, PhpStorm, PHP PSI
+view. Test server (from the repo root):
+`docker run --rm -p 127.0.0.1:8000:8000 -v "$PWD":/app:ro -w /app/test-fixtures/php-site -e VISUAL_INSPECTOR_DEV=1 -e VISUAL_INSPECTOR_ROOT=/app php:8.5-cli php -d auto_prepend_file=/app/php-support/visual-inspector-prepend.php -S 0.0.0.0:8000`
+then open `http://localhost:8000/index.php` in the preview and open the repo root as the project.
+
 ## Manual test results (owner, 2026-11-08, `runIde`)
 
 Confirmed by hand: preview renders with styling (after fixing a cookie bug that made the built-in
@@ -126,6 +137,5 @@ test project: `test-fixtures/demo-site` (open as its own project).
 
 ## Next task
 
-Phase 3, first item: integrate PHP into the preview (the inspector bootstrap currently runs only for
-the built-in server origin; a user-run `php -S` origin needs the same trust rule, ADR 0005/0009).
-Then: Phase 2 exit criteria (automated end-to-end coverage), a check in PhpStorm.
+Owner: try PHP in PhpStorm (steps in `docs/php.md`). Then: Phase 2 exit criteria (automated
+end-to-end coverage), Vue adapter.

@@ -16,8 +16,10 @@ class PageMessageHandler(
     private val projectBaseDir: () -> Path?,
     private val opener: EditorOpener,
     private val notifier: UnmappableNotifier,
+    /** Evaluated at handling time. `JBCefJSQuery` gives no origin, so the host checks the browser's current URL (ADR 0005, 0010). */
+    private val originTrusted: () -> Boolean,
 ) {
-    fun handle(raw: String?): String = when (val r = BridgeMessageValidator.validate(raw)) {
+    fun handle(raw: String?): String = if (!originTrusted()) BridgeMessageValidator.errorReply(ErrorCode.DENIED) else when (val r = BridgeMessageValidator.validate(raw)) {
         is ValidationResult.Rejected -> BridgeMessageValidator.errorReply(r.code)
         is ValidationResult.Valid -> when (val m = r.message) {
             is BridgeMessage.Navigate -> navigate(m.path, m.offset, m.id)

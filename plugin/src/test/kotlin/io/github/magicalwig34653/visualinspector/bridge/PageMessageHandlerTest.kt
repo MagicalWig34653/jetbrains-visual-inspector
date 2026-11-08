@@ -11,7 +11,8 @@ class PageMessageHandlerTest {
     private val opened = mutableListOf<Pair<Path, Int>>()
     private val notices = mutableListOf<Triple<String, String?, Ancestor?>>()
 
-    private fun handler(base: Path?) = PageMessageHandler({ base }, { f, o -> opened += f to o }, { t, l, a -> notices += Triple(t, l, a) })
+    private fun handler(base: Path?, trusted: Boolean = true) =
+        PageMessageHandler({ base }, { f, o -> opened += f to o }, { t, l, a -> notices += Triple(t, l, a) }, { trusted })
 
     @Test fun navigateOpensResolvedFileAndAcks() {
         val dir = tmp.newFolder().toPath()
@@ -37,5 +38,24 @@ class PageMessageHandlerTest {
         assertTrue(reply.contains(""""type":"ack""""))
         assertEquals(listOf(Triple("div", null, Ancestor("a.html", 5, "ul"))), notices)
         assertTrue(opened.isEmpty())
+    }
+
+    @Test fun untrustedOriginIsDeniedForEveryMessage() {
+        val dir = tmp.newFolder().toPath()
+        java.nio.file.Files.writeString(dir.resolve("index.html"), "<p>")
+        val h = handler(dir, trusted = false)
+        val denied = """{"v":1,"type":"error","code":"denied"}"""
+        assertEquals(denied, h.handle("""{"v":1,"type":"navigate","path":"index.html","offset":0}"""))
+        assertEquals(denied, h.handle("""{"v":1,"type":"unmappable","tag":"div"}"""))
+        assertEquals(denied, h.handle("""{"v":1,"type":"hello"}"""))
+        assertTrue(opened.isEmpty() && notices.isEmpty())
+    }
+
+    @Test fun trustIsEvaluatedPerMessage() {
+        var trusted = true
+        val h = PageMessageHandler({ null }, { _, _ -> }, { _, _, _ -> }, { trusted })
+        assertTrue(h.handle("""{"v":1,"type":"hello"}""").contains("ack"))
+        trusted = false
+        assertTrue(h.handle("""{"v":1,"type":"hello"}""").contains("denied"))
     }
 }

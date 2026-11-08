@@ -33,6 +33,7 @@ import java.net.URI
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import javax.swing.JButton
+import javax.swing.SwingUtilities
 import javax.swing.JToggleButton
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -45,7 +46,14 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
     private val browser: JBCefBrowser = JBCefBrowser.createBuilder().setUrl(PreviewUrlPolicy.BLANK).build()
     private val query: JBCefJSQuery = JBCefJSQuery.create(browser as JBCefBrowserBase)
     private val modeQuery: JBCefJSQuery = JBCefJSQuery.create(browser as JBCefBrowserBase)
+    private val pathsQuery: JBCefJSQuery = JBCefJSQuery.create(browser as JBCefBrowserBase)
     private val status = JBLabel("Waiting for a preview page")
+    private val trustButton = JButton("Trust this origin").apply { isVisible = false; addActionListener { onTrustButton() } }
+    private val trustedOrigins = project.service<TrustedOriginsService>()
+    /** Normalized origin of the main frame after the last load (null: none or not allowed). */
+    @Volatile private var currentOrigin: String? = null
+    /** Files that have elements in the loaded page, from their `data-vi-src` attributes (not from the URL). */
+    @Volatile private var pagePaths: Set<String> = emptySet()
     private val inspectToggle = JToggleButton("Inspect", true).apply {
         toolTipText = "Inspect mode: hover frames elements, click opens the source (Alt+click in the page also toggles)"
     }
@@ -59,6 +67,7 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         { project.guessProjectDir()?.toNioPath() },
         IdeEditorOpener(project),
         IdeUnmappableNotifier(project) { path, offset -> messageHandler.navigate(path, offset, null) },
+        { isMainFrameTrusted() },
     )
     /** Origin of the last token-bearing URL; later same-origin pages carry the token cookie instead. */
     @Volatile private var previewOrigin: String? = null
@@ -71,8 +80,16 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         Disposer.register(this, browser)
         Disposer.register(this, query)
         Disposer.register(this, modeQuery)
+        Disposer.register(this, pathsQuery)
+
+        pathsQuery.addHandler { raw ->
+            // Same origin check as the bridge: the query cannot tell which frame called it.
+            if (isMainFrameTrusted()) pagePaths = PagePaths.parse(raw)
+            JBCefJSQuery.Response("ok")
+        }
 
         modeQuery.addHandler { on ->
+            if (!isMainFrameTrusted()) return@addHandler JBCefJSQuery.Response("ok")
             ApplicationManager.getApplication().invokeLater({
                 if (!disposed) inspectToggle.isSelected = on == "1" // setSelected does not fire the ActionListener
             }, ModalityState.any())
@@ -81,6 +98,10 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
 
         query.addHandler { raw ->
             val reply = messageHandler.handle(raw)
+            if (!isMainFrameTrusted()) {
+                setStatus("Blocked a message from an origin that is not trusted")
+                return@addHandler JBCefJSQuery.Response(reply)
+            }
             BridgeMessageValidator.validate(raw).let { r ->
                 if (r is ValidationResult.Valid) {
                     val m = r.message
@@ -113,10 +134,20 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         }, browser.cefBrowser)
         client.addLoadHandler(object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(b: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
-                if (frame?.isMain != true || !PreviewUrlPolicy.isAllowedTarget(frame.url)) return
-                // Only previews opened with our token get the inspector (the same token gates attribute injection).
-                if (originOf(frame.url) != previewOrigin) return
-                loadedRelativePath = relativePathOf(frame.url)
+                if (frame?.isMain != true) return
+                pagePaths = emptySet()
+                val origin = TrustedOrigins.originOf(frame.url)
+                currentOrigin = origin
+                if (origin == null) { loadedRelativePath = null; updateTrustUi(); return }
+                // Built-in server: only previews opened with our token. Any other origin: only after user confirmation.
+                if (!isTrusted(origin)) {
+                    loadedRelativePath = null
+                    updateTrustUi()
+                    setStatus("Inspector is off: $origin is not trusted. Use \"Trust this origin\" to enable it.")
+                    return
+                }
+                loadedRelativePath = if (origin == previewOrigin) relativePathOf(frame.url) else null
+                updateTrustUi()
                 val bundle = InspectorBundle.source
                 if (bundle == null) { setStatus(InspectorBundle.MISSING_MESSAGE); return }
                 val send = query.inject(
@@ -125,8 +156,10 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
                     "function(c,m){}",
                 )
                 val modeSend = modeQuery.inject("on", "function(r){}", "function(c,m){}")
+                val pathsSend = pathsQuery.inject("p", "function(r){}", "function(c,m){}")
                 b?.executeJavaScript(
-                    "window.__viSend=function(msg){$send};window.__viSend.mode=function(on){$modeSend};" + InspectorBundle.bootstrap(bundle),
+                    "window.__viSend=function(msg){$send};window.__viSend.mode=function(on){$modeSend};" +
+                        "window.__viSend.paths=function(p){$pathsSend};" + InspectorBundle.bootstrap(bundle) + COLLECT_PATHS,
                     frame.url, 0,
                 )
             }
@@ -136,13 +169,17 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         address.addActionListener { load(address.text.trim()) }
         inspectToggle.addActionListener { setInspectMode(inspectToggle.isSelected) }
         val builtIn = JButton("Built-in server").apply { addActionListener { loadBuiltInServer() } }
+        val south = JPanel(BorderLayout()).apply {
+            add(status, BorderLayout.CENTER)
+            add(trustButton, BorderLayout.EAST)
+        }
         val bar = JPanel(BorderLayout()).apply {
             add(address, BorderLayout.CENTER)
             add(JPanel(FlowLayout(FlowLayout.RIGHT, 2, 0)).apply { add(inspectToggle); add(go); add(builtIn) }, BorderLayout.EAST)
         }
         component.add(bar, BorderLayout.NORTH)
         component.add(browser.component, BorderLayout.CENTER)
-        component.add(status, BorderLayout.SOUTH)
+        component.add(south, BorderLayout.SOUTH)
     }
 
     fun load(url: String) {
@@ -160,7 +197,7 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
             ApplicationManager.getApplication().invokeLater({
                 if (!disposed) {
                     address.text = url
-                    previewOrigin = originOf(url)
+                    previewOrigin = originOfRaw(url)
                     load(url)
                 }
             }, ModalityState.any())
@@ -184,7 +221,7 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
             ApplicationManager.getApplication().invokeLater({
                 if (!disposed) {
                     address.text = url
-                    previewOrigin = originOf(url)
+                    previewOrigin = originOfRaw(url)
                     load(url)
                 }
             }, ModalityState.any())
@@ -193,6 +230,7 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
 
     /** IDE to page message (already built by the validated serializer). */
     fun sendToPage(message: BridgeMessage) {
+        if (!isMainFrameTrusted()) return
         val json = BridgeMessageValidator.serialize(message)
         browser.cefBrowser.executeJavaScript(
             "if(window.__viReceive)window.__viReceive(${GsonBuilder().create().toJson(json)});", PreviewUrlPolicy.BLANK, 0)
@@ -211,14 +249,68 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         if (path.startsWith(prefix)) path.removePrefix(prefix) else null
     } catch (e: java.net.URISyntaxException) { null }
 
+    /** True when the file has elements in the loaded page (matched by attribute paths, so PHP includes work). */
+    fun showsFile(relativePath: String): Boolean = loadedRelativePath == relativePath || relativePath in pagePaths
+
+    /** Puts the cursor in the address field so the user can type the URL of a PHP page (the plugin starts no server). */
+    fun focusAddressBar() {
+        address.selectAll()
+        address.requestFocusInWindow()
+    }
+
+    private fun isTrusted(origin: String?): Boolean =
+        TrustedOrigins.isTrusted(origin, previewOrigin?.let(TrustedOrigins::originOf), trustedOrigins.confirmed())
+
+    /**
+     * Checked at handling time against the browser's current URL: `JBCefJSQuery` gives no frame or origin, so a
+     * script in a subframe or a navigated page cannot be told apart. Limit accepted in ADR 0005 and 0010.
+     */
+    private fun isMainFrameTrusted(): Boolean = !disposed && isTrusted(TrustedOrigins.originOf(browser.cefBrowser.url))
+
+    private fun onTrustButton() {
+        val origin = currentOrigin ?: return
+        if (isTrusted(origin) && origin != previewOrigin?.let(TrustedOrigins::originOf)) {
+            trustedOrigins.revoke(origin)
+            browser.cefBrowser.reload()
+            return
+        }
+        if (isTrusted(origin)) return
+        val ok = Messages.showYesNoDialog(
+            project,
+            "Allow the Visual Inspector overlay and bridge on $origin?\n\n" +
+                "Scripts on that page can then ask the IDE to open files inside this project. Only trust servers you " +
+                "started yourself, in development. You can revoke this with \"Revoke trust\".",
+            "Trust $origin?", "Trust", "Cancel", Messages.getWarningIcon(),
+        ) == Messages.YES
+        if (ok && trustedOrigins.trust(origin)) browser.cefBrowser.reload()
+    }
+
+    private fun updateTrustUi() {
+        SwingUtilities.invokeLater {
+            if (disposed) return@invokeLater
+            val origin = currentOrigin
+            val builtIn = origin != null && origin == previewOrigin?.let(TrustedOrigins::originOf)
+            trustButton.isVisible = origin != null && !builtIn
+            trustButton.text = if (origin != null && isTrusted(origin)) "Revoke trust" else "Trust this origin"
+            trustButton.toolTipText = origin
+        }
+    }
+
     /** Shows [text] in the status line (any thread). */
     fun showStatus(text: String) = setStatus(text)
 
-    private fun originOf(url: String?): String? =
+    private fun originOfRaw(url: String?): String? =
         try { URI(url ?: return null).let { "${it.scheme}://${it.host}:${it.port}" } } catch (e: java.net.URISyntaxException) { null }
 
     private fun setStatus(text: String) {
         ApplicationManager.getApplication().invokeLater({ if (!disposed) status.text = text }, ModalityState.any())
+    }
+
+    private companion object {
+        /** Host script (not page protocol): reports which files own elements in the page, to match editor files. */
+        const val COLLECT_PATHS = ";(function(){try{var s=Object.create(null),n=document.querySelectorAll('[data-vi-src]');" +
+            "for(var i=0;i<n.length&&i<20000;i++){var v=n[i].getAttribute('data-vi-src')||'',k=v.lastIndexOf(':');if(k>0)s[v.slice(0,k)]=1;}" +
+            "window.__viSend.paths(JSON.stringify(Object.keys(s).slice(0,200)));}catch(e){}})();"
     }
 
     override fun dispose() {

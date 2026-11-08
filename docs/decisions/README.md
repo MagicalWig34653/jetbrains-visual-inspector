@@ -15,3 +15,4 @@ record supersedes them.
 | [0007](0007-product-naming.md) | Product name and plugin identifiers | Accepted |
 | [0008](0008-owner-product-decisions.md) | Product decisions by the project owner | Accepted |
 | [0009](0009-phase1-owner-answers.md) | Owner answers after the phase 1 feasibility analysis | Accepted |
+| [0010](0010-external-origin-trust.md) | Trust for external localhost origins | Accepted |

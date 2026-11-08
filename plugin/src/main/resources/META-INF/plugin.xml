@@ -26,6 +26,11 @@
             <action id="VisualInspector.OpenInInspector"
                     class="io.github.magicalwig34653.visualinspector.action.OpenInInspectorAction"
                     text="Open Current HTML File in Visual Inspector"/>
+            <action id="VisualInspector.OpenPhpPage"
+                    class="io.github.magicalwig34653.visualinspector.action.OpenPhpPageAction"
+                    text="Open PHP Page in Visual Inspector">
+                <add-to-group group-id="ToolsMenu" anchor="last"/>
+            </action>
             <action id="VisualInspector.HighlightInPreview"
                     class="io.github.magicalwig34653.visualinspector.action.HighlightInPreviewAction"
                     text="Highlight in Visual Inspector Preview">

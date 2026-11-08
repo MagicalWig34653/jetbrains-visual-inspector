@@ -21,14 +21,16 @@ import io.github.magicalwig34653.visualinspector.product.ProductGuard
 private const val TOOL_WINDOW_ID = "Visual Inspector"
 
 private fun VirtualFile.isHtml() = extension?.lowercase() in setOf("html", "htm")
+private fun VirtualFile.isMarkup() = isHtml() || extension?.lowercase() == "php"
 private fun Project.relativePathOf(file: VirtualFile): String? =
     guessProjectDir()?.let { VfsUtilCore.getRelativePath(file, it) }
 
 abstract class InspectorAction : AnAction(), DumbAware {
+    protected open fun appliesTo(file: VirtualFile) = file.isHtml()
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
     override fun update(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        e.presentation.isEnabledAndVisible = ProductGuard.isSupportedIde() && e.project != null && file?.isHtml() == true
+        e.presentation.isEnabledAndVisible = ProductGuard.isSupportedIde() && e.project != null && file != null && appliesTo(file)
     }
 }
 
@@ -43,13 +45,28 @@ class OpenInInspectorAction : InspectorAction() {
     }
 }
 
+/** Focuses the preview's address bar so the user can type the URL of a PHP page. Starts no process. */
+class OpenPhpPageAction : AnAction(), DumbAware {
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabledAndVisible = ProductGuard.isSupportedIde() && e.project != null
+    }
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val tw = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID) ?: return
+        tw.show { project.service<PreviewHost>().panel?.focusAddressBar() }
+    }
+}
+
 /** Sends `highlight` for the tag around the caret. Manual only; there is no automatic caret listener. */
 class HighlightInPreviewAction : InspectorAction() {
+    override fun appliesTo(file: VirtualFile) = file.isMarkup()
     override fun actionPerformed(e: AnActionEvent) = highlight(e, next = false)
 }
 
 /** Re-sends `highlight` for the same tag with the next instance emphasized. */
 class NextInstanceAction : InspectorAction() {
+    override fun appliesTo(file: VirtualFile) = file.isMarkup()
     override fun actionPerformed(e: AnActionEvent) = highlight(e, next = true)
 }
 
@@ -66,7 +83,10 @@ private fun highlight(e: AnActionEvent, next: Boolean) {
     val host = project.service<PreviewHost>()
     val panel = host.panel ?: return warn(project, HighlightMessages.NO_PREVIEW)
     val rel = project.relativePathOf(file) ?: return
-    if (panel.loadedRelativePath != rel) return warn(project, HighlightMessages.notServed(rel, panel.loadedRelativePath))
+    if (!panel.showsFile(rel)) return warn(
+        project,
+        if (panel.loadedRelativePath == null) HighlightMessages.notInPage(rel) else HighlightMessages.notServed(rel, panel.loadedRelativePath),
+    )
     val psi = PsiDocumentManager.getInstance(project).getPsiFile(editor.document)
     val offset = psi?.let { HighlightTarget.tagOffsetAt(it, editor.caretModel.offset) }
         ?: return warn(project, HighlightMessages.NO_TAG)

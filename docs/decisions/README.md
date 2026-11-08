@@ -13,3 +13,4 @@ record supersedes them.
 | [0005](0005-bridge-security-model.md) | Browser-IDE bridge security model | Proposed |
 | [0006](0006-project-local-agent-tooling.md) | Project-local agents, skills and hooks | Accepted |
 | [0007](0007-product-naming.md) | Product name and plugin identifiers | Accepted |
+| [0008](0008-owner-product-decisions.md) | Product decisions by the project owner | Accepted |

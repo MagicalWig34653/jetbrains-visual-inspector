@@ -1,8 +1,9 @@
 # Architecture
 
 **Status: preliminary.** Roadmap phase 1 validates this design and `projektauftrag.md` requires a
-joint architecture discussion before implementation. Only the repository layout and toolchain are
-final (ADR 0002, 0003). ADR 0004 and 0005 are `Proposed`.
+joint architecture discussion before implementation. Final so far: repository layout and toolchain
+(ADR 0002, 0003) and the owner's product decisions (ADR 0008), which this design must follow. ADR
+0004 and 0005 are `Proposed`.
 
 Evidence labels: **[V]** confirmed in official documentation or by a test in this repository,
 **[P]** technically plausible but unconfirmed, **[E]** must be proven by a prototype.
@@ -57,12 +58,13 @@ not navigate to a guess.
 
 | Technology | Candidate source of truth | Evidence |
 | --- | --- | --- |
-| Static HTML | Inject location attributes into the served response in memory, never on disk | [E] |
+| Static HTML (decided, ADR 0008) | Inject location attributes into the served response in memory, never on disk; served by the IDE's built-in web server, otherwise by the plugin | [E] |
 | Static HTML fallback | Structural match against HTML PSI, with explicit ambiguity handling | [P] |
+| Vanilla PHP (prioritized, ADR 0008) | To be researched: mapping server-rendered output back to `.php` files | [E] |
 | Vue | Dev-mode component file metadata, Vite inspector plugins | [P] |
 | Svelte | Dev-mode element location metadata | [P] |
 | React | Dev-mode fiber debug information; changed across React versions | [E] |
-| PHP, Twig, Blade | Optional dev-only template instrumentation | [E] |
+| Twig, Blade | Optional dev-only template instrumentation | [E] |
 
 ## Security model (proposed, ADR 0005)
 

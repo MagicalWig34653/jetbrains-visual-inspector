@@ -23,12 +23,12 @@ that cannot be mapped.
 
 ## Phase 3: Frameworks
 
-Adapter interface; React, Vue and Svelte step by step; dev servers and HMR; ambiguous mappings and
-repeated component instances; Chrome and Firefox extension.
+Adapter interface; vanilla PHP first (ADR 0008), then Vue, Svelte and React; dev servers and HMR;
+ambiguous mappings and repeated component instances; Chrome and Firefox extension.
 
 ## Phase 4: Extended integration
 
-Evaluate PHP and template support, polish the UI, optimize performance, test across IDE versions.
+Evaluate Twig and Blade, polish the UI, optimize performance, test across IDE versions.
 
 ## Phase 5: Publication preparation
 

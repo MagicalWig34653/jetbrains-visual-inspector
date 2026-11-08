@@ -1,0 +1,119 @@
+{
+  "answeredAt": "2026-11-08T10:35:58.011Z",
+  "title": "Visual Inspector: Architekturentscheidungen",
+  "answers": [
+    {
+      "id": "products",
+      "question": "Zielprodukte",
+      "choice": "ws-ps",
+      "choiceLabel": "Nur WebStorm und PhpStorm",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "baseline",
+      "question": "Mindestversion der Plattform",
+      "choice": "2026.2",
+      "choiceLabel": "2026.2 (Build 262), wie aktuell eingerichtet",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "html-mapping",
+      "question": "DOM-zu-Quelle-Zuordnung für statisches HTML (MVP)",
+      "choice": "inject",
+      "choiceLabel": "Positionsattribute in die ausgelieferte Antwort injizieren, nur im Speicher",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "content-source",
+      "question": "Woher die Vorschau statische Dateien lädt",
+      "choice": "ide-builtin",
+      "choiceLabel": "Eingebauter Webserver der IDE",
+      "recommended": false,
+      "note": "Wenn der eingebaute nicht geht, dann das Empfohlene"
+    },
+    {
+      "id": "preview-placement",
+      "question": "Standardplatz der Vorschau",
+      "choice": "toolwindow",
+      "choiceLabel": "Tool Window (seitlich andockbar)",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "external-browsers",
+      "question": "Chrome- und Firefox-Anbindung",
+      "choice": "phase3",
+      "choiceLabel": "Erst in Phase 3, nach dem JCEF-MVP",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "framework-order",
+      "question": "Reihenfolge der Frameworks nach HTML",
+      "choice": "vue-svelte-react",
+      "choiceLabel": "Vue, dann Svelte, dann React",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "instrumentation",
+      "question": "Darf Framework-Support eine optionale Dev-Instrumentierung verlangen?",
+      "choice": "optional",
+      "choiceLabel": "Ja, als optionale, dokumentierte Dev-Abhängigkeit",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "sync-default",
+      "question": "Standard für Code→Vorschau-Synchronisierung",
+      "choice": "manual",
+      "choiceLabel": "Aus, Auslösung per Aktion oder Tastenkürzel",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "multi-instance",
+      "question": "Mehrfach gerenderte Elemente (z. B. Listeneinträge)",
+      "choice": "all-cycle",
+      "choiceLabel": "Alle hervorheben, durchschalten möglich",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "trust-scope",
+      "question": "Welche Seiten dürfen die IDE-Navigation auslösen?",
+      "choice": "local",
+      "choiceLabel": "Nur Projektdateien und localhost-Adressen, die der Nutzer geöffnet hat",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "php-templates",
+      "question": "PHP-, Twig- und Blade-Unterstützung",
+      "choice": "earlier",
+      "choiceLabel": "Früher priorisieren (PhpStorm-Nutzer im Fokus)",
+      "recommended": false,
+      "note": "PHP erstmal nur vanilla"
+    },
+    {
+      "id": "next-step",
+      "question": "Vorgehen in der nächsten Session",
+      "choice": "report-then-spikes",
+      "choiceLabel": "Erst Machbarkeitsbericht, dann Rückfragen, dann Spikes",
+      "recommended": true,
+      "note": ""
+    },
+    {
+      "id": "naming-license",
+      "question": "Name und Lizenz",
+      "choice": "keep",
+      "choiceLabel": "So beibehalten",
+      "recommended": true,
+      "note": ""
+    }
+  ],
+  "generalNote": ""
+}

@@ -4,7 +4,8 @@ Last updated: 2026-11-08, after project initialization.
 
 Repository: <https://github.com/MagicalWig34653/jetbrains-visual-inspector>
 
-Phase: 0 (project setup) finished; phase 1 (architecture and feasibility) not started.
+Phase: 0 (project setup) finished; phase 1 (architecture and feasibility) not started. The owner's
+product decisions are recorded in ADR 0008 (raw answers: `docs/research/owner-answers.json`).
 
 ## Implemented
 

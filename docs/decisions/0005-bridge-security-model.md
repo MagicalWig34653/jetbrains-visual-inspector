@@ -1,6 +1,6 @@
 # 0005: Browser-IDE bridge security model
 
-Status: Proposed (2026-11-08). Owner has accepted the worst case (ADR 0009); to be finalized with bridge protocol v1.
+Status: Accepted (2026-11-08). Owner has accepted the worst case (ADR 0009); to be finalized with bridge protocol v1.
 
 ## Context
 

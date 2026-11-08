@@ -75,6 +75,17 @@ limited to localhost URLs, `JBCefJSQuery` ping and a closed message validator, d
 **Not verified:** real JCEF rendering, the bridge round trip, the navigation veto and behavior in
 PhpStorm. No test builds `PreviewPanel`; this needs `runIde` by hand (backlog item 3).
 
+## Bridge protocol v1 (2026-11-08)
+
+Specified in `docs/protocol.md`; implemented in `browser-extension/src/protocol.ts` and
+`plugin/.../bridge/BridgeMessage.kt`, both tested against the shared `test-fixtures/protocol/vectors.json`
+(202 vectors). `ProjectPathResolver` confines paths to the project, including symlink escapes.
+Verified in this session: `npm test` 214 of 214, `npm run typecheck` clean,
+`scripts/gradle-docker.sh test verifyPlugin` 34 of 34 tests, Plugin Verifier Compatible with both
+products. ADR 0005 is now `Accepted`. Known difference: Kotlin rejects `1.0` and duplicate keys, TS
+accepts `1.0` (no vector covers it).
+
 ## Next task
 
-Backlog item 4: bridge protocol v1 with validation tests on both sides.
+Phase 2, backlog item 5 onward: inspector overlay in the page, click-to-source navigation for static
+HTML and editor-to-preview highlighting. Gate the injection handler to inspector previews first.

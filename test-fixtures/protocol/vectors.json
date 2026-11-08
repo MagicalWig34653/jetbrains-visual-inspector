@@ -1,0 +1,1402 @@
+{
+ "description": "Shared bridge protocol v1 vectors (docs/protocol.md). direction: page = page->IDE, ide = IDE->page. raw is the exact string a receiver gets. valid=false carries the expected error code. Consumed by browser-extension/src/protocol.test.ts and, later, the Kotlin tests.",
+ "vectors": [
+  {
+   "name": "hello minimal",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\"}",
+   "valid": true
+  },
+  {
+   "name": "hello with id",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"a-1_b.c\"}",
+   "valid": true
+  },
+  {
+   "name": "navigate minimal",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10}",
+   "valid": true
+  },
+  {
+   "name": "navigate full",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"line\":3,\"label\":\"nav.main\",\"index\":1,\"count\":3,\"id\":\"n1\"}",
+   "valid": true
+  },
+  {
+   "name": "navigate offset zero",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":0}",
+   "valid": true
+  },
+  {
+   "name": "navigate max offset",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":2147483647}",
+   "valid": true
+  },
+  {
+   "name": "navigate unicode path",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"seiten/über uns.html\",\"offset\":10}",
+   "valid": true
+  },
+  {
+   "name": "navigate path 512 chars",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/bb\",\"offset\":10}",
+   "valid": true
+  },
+  {
+   "name": "unmappable minimal",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"tbody\"}",
+   "valid": true
+  },
+  {
+   "name": "unmappable with ancestor",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"tbody\",\"label\":\"table.data\",\"ancestor\":{\"path\":\"a.html\",\"offset\":5,\"label\":\"table\"}}",
+   "valid": true
+  },
+  {
+   "name": "highlight minimal",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"src/index.html\",\"offset\":10}",
+   "valid": true
+  },
+  {
+   "name": "highlight with index",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"src/index.html\",\"offset\":10,\"index\":2,\"id\":\"h1\"}",
+   "valid": true
+  },
+  {
+   "name": "clear",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"clear\"}",
+   "valid": true
+  },
+  {
+   "name": "ack",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"ack\"}",
+   "valid": true
+  },
+  {
+   "name": "ack with ref",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"ack\",\"ref\":\"n1\"}",
+   "valid": true
+  },
+  {
+   "name": "error not_found",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\",\"code\":\"not_found\",\"ref\":\"n1\"}",
+   "valid": true
+  },
+  {
+   "name": "error denied",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\",\"code\":\"denied\"}",
+   "valid": true
+  },
+  {
+   "name": "not json",
+   "direction": "page",
+   "raw": "hello",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "empty",
+   "direction": "page",
+   "raw": "",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "truncated",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\"",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "trailing garbage",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\"} x",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "array",
+   "direction": "page",
+   "raw": "[]",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "number",
+   "direction": "page",
+   "raw": "42",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "null",
+   "direction": "page",
+   "raw": "null",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "string",
+   "direction": "page",
+   "raw": "\"hello\"",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "duplicate-free but NaN literal",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":NaN}",
+   "valid": false,
+   "code": "bad_json"
+  },
+  {
+   "name": "too large",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"a\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ",
+   "valid": false,
+   "code": "too_large"
+  },
+  {
+   "name": "missing version",
+   "direction": "page",
+   "raw": "{\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "version 2",
+   "direction": "page",
+   "raw": "{\"v\":2,\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "version 0",
+   "direction": "page",
+   "raw": "{\"v\":0,\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "version string",
+   "direction": "page",
+   "raw": "{\"v\":\"1\",\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "version float",
+   "direction": "page",
+   "raw": "{\"v\":1.5,\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "version null",
+   "direction": "page",
+   "raw": "{\"v\":null,\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "missing type",
+   "direction": "page",
+   "raw": "{\"v\":1}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "type number",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":5}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "type object",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":{\"a\":1}}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "unknown type",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"openFile\",\"path\":\"a.html\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "legacy ping not in v1",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"ping\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "type constructor",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"constructor\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "type __proto__",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"__proto__\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "type toString",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"toString\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "ide type in page direction",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html\",\"offset\":1}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "page type in ide direction",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "exec type",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"exec\",\"cmd\":\"ls\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "type case differs",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"Hello\"}",
+   "valid": false,
+   "code": "unknown_type"
+  },
+  {
+   "name": "extra field",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"extra\":1}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "extra field on navigate",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"command\":\"rm -rf /\"}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "proto key",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"__proto__\":{\"polluted\":true}}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "constructor key",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"constructor\":{\"prototype\":{\"x\":1}}}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "prototype key",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"prototype\":1}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "proto key in ancestor",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":{\"path\":\"a.html\",\"offset\":1,\"__proto__\":{\"x\":1}}}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "ide-only field on page message",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"ref\":\"x\"}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "extra field ide",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"clear\",\"path\":\"a.html\"}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "ack with id instead of ref",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"ack\",\"id\":\"x\"}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "navigate missing path",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"offset\":1}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "navigate missing offset",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset string",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":\"10\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset negative",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":-1}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset float",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":1.5}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset too big",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":2147483648}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset exponent float",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":1e400}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset null",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":null}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset boolean",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":true}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset array",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":[1]}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "line zero",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"line\":0}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "line negative",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"line\":-3}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "index negative",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"index\":-1}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "index too big",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"index\":10000,\"count\":10000}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "count zero",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"count\":0}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "count too big",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"count\":10001}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "index not below count",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"index\":3,\"count\":3}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label empty",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label number",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":5}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label object",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":{\"a\":1}}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label too long",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label control char",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"a\\u0000b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label newline",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"a\\nb\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label bidi override",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"a‮b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label zero width",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"a​b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label lone surrogate",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":1,\"label\":\"\\ud800\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "label line separator",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src/index.html\",\"offset\":10,\"label\":\"a b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "id empty",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "id too long",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "id number",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":5}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "id quotes",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"\\\"},\\\"x\\\":{\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "id space",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":\"a b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ref bad",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"ack\",\"ref\":\"a/b\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "error code missing",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "error code unknown",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\",\"code\":\"oops\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "error code object",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\",\"code\":{}}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "error code proto name",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"error\",\"code\":\"constructor\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "unmappable missing tag",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "tag with angle bracket",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"<script>\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "tag too long",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "tag empty",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ancestor string",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":\"a.html:1\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ancestor array",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":[]}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ancestor null",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":null}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ancestor missing offset",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":{\"path\":\"a.html\"}}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "ancestor extra field",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":{\"path\":\"a.html\",\"offset\":1,\"x\":1}}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "ancestor nested ancestor",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":{\"path\":\"a.html\",\"offset\":1,\"ancestor\":{}}}",
+   "valid": false,
+   "code": "unknown_field"
+  },
+  {
+   "name": "ancestor bad path",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"unmappable\",\"tag\":\"div\",\"ancestor\":{\"path\":\"../a.html\",\"offset\":1}}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "deeply nested value",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}",
+   "valid": false,
+   "code": "too_large"
+  },
+  {
+   "name": "deeply nested small",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"hello\",\"id\":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "highlight index negative",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"src/index.html\",\"offset\":10,\"index\":-1}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "highlight offset string",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"src/index.html\",\"offset\":\"1\"}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "navigate path empty",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path empty",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path dot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\".\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path dot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\".\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path dotdot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"..\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path dotdot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"..\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path dotdot slash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"../a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path dotdot slash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"../a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path nested dotdot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/../../b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path nested dotdot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/../../b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path inner dotdot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/../b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path inner dotdot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/../b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path backslash dotdot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"..\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path backslash dotdot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"..\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path backslash path",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"src\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path backslash path",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"src\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path encoded dots",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"%2e%2e/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path encoded dots",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"%2e%2e/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path encoded dots upper",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"%2E%2E/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path encoded dots upper",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"%2E%2E/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path encoded slash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a%2fb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path encoded slash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a%2fb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path encoded backslash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"..%5ca.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path encoded backslash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"..%5ca.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path double encoded",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"%252e%252e/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path double encoded",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"%252e%252e/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path absolute unix",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"/etc/passwd\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path absolute unix",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"/etc/passwd\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path absolute windows slash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"/C:/Windows/win.ini\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path absolute windows slash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"/C:/Windows/win.ini\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path drive letter",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"C:/Windows/win.ini\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path drive letter",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"C:/Windows/win.ini\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path drive letter backslash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"C:\\\\Windows\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path drive letter backslash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"C:\\\\Windows\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path drive relative",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"C:a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path drive relative",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"C:a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path UNC",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"//server/share/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path UNC",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"//server/share/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path UNC backslash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"\\\\\\\\server\\\\share\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path UNC backslash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"\\\\\\\\server\\\\share\\\\a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path file scheme",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"file:///etc/passwd\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path file scheme",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"file:///etc/passwd\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path http scheme",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"http://evil.example/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path http scheme",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"http://evil.example/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path javascript scheme",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"javascript:alert(1)\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path javascript scheme",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"javascript:alert(1)\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path data scheme",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"data:text/html,x\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path data scheme",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"data:text/html,x\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path NUL",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a\\u0000.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path NUL",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a\\u0000.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path NUL suffix trick",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\\u0000.txt\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path NUL suffix trick",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html\\u0000.txt\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path newline",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a\\nb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path newline",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a\\nb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path tab",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a\\tb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path tab",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a\\tb.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path DEL",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"ab.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path DEL",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"ab.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path C1 control",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"ab.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path C1 control",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"ab.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path bidi override",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a‮b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path bidi override",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a‮b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path zero width",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a​b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path zero width",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a​b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path line separator",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path line separator",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path trailing slash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path trailing slash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path double slash",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a//b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path double slash",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a//b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path leading dot segment",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"./a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path leading dot segment",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"./a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path inner dot segment",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/./b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path inner dot segment",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/./b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path trailing dot",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html.\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path trailing dot",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html.\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path trailing dot segment",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a./b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path trailing dot segment",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a./b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path trailing space",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html \",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path trailing space",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html \",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path leading space segment",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/ b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path leading space segment",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/ b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path too long",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/b\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path too long",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/b\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path segment too long",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path segment too long",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path home",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"~/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path home",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"~/a.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path colon in name",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a:b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path colon in name",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a:b.html\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "navigate path ADS",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html::$DATA\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "highlight path ADS",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html::$DATA\",\"offset\":10}",
+   "valid": false,
+   "code": "bad_path"
+  },
+  {
+   "name": "path number",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":5,\"offset\":10}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "path null",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":null,\"offset\":10}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "path object",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":{\"toString\":\"x\"},\"offset\":10}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "path array",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":[\"a.html\"],\"offset\":10}",
+   "valid": false,
+   "code": "bad_field"
+  }
+ ]
+}

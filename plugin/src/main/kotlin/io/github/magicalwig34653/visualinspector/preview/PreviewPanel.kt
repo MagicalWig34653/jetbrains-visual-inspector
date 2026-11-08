@@ -48,11 +48,11 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
             when (val r = BridgeMessageValidator.validate(raw)) {
                 is ValidationResult.Valid -> {
                     setStatus("Bridge: received ${r.message::class.simpleName}")
-                    JBCefJSQuery.Response(BridgeMessageValidator.reply(r.message))
+                    JBCefJSQuery.Response(BridgeMessageValidator.ackFor(r.message))
                 }
                 is ValidationResult.Rejected -> {
-                    setStatus("Bridge: dropped a message (${r.reason})")
-                    JBCefJSQuery.Response(null, 400, "rejected")
+                    setStatus("Bridge: dropped a message (${r.code.wire})")
+                    JBCefJSQuery.Response(BridgeMessageValidator.errorReply(r.code))
                 }
             }
         }
@@ -70,14 +70,14 @@ class PreviewPanel(private val project: Project, parent: Disposable) : Disposabl
         client.addLoadHandler(object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(b: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                 if (frame?.isMain != true || !PreviewUrlPolicy.isAllowedTarget(frame.url)) return
-                // Defines window.__viSend(jsonString); then the plugin pings itself once as the round-trip proof.
+                // Defines window.__viSend(jsonString); then the page says hello once as the round-trip proof.
                 val send = query.inject(
                     "msg",
                     "function(r){window.dispatchEvent(new CustomEvent('vi-response',{detail:r}));}",
                     "function(c,m){window.dispatchEvent(new CustomEvent('vi-error',{detail:c}));}",
                 )
                 b?.executeJavaScript(
-                    "window.__viSend=function(msg){$send};window.__viSend('{\"v\":1,\"type\":\"ping\",\"id\":\"self-check\"}');",
+                    "window.__viSend=function(msg){$send};window.__viSend('{\"v\":1,\"type\":\"hello\",\"id\":\"self-check\"}');",
                     frame.url, 0,
                 )
             }

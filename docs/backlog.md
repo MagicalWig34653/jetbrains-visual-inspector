@@ -14,12 +14,11 @@ Ordered by priority. Move finished items out via `/update-project-state`; histor
 3. **Verify the JCEF preview by hand** (spike 3 is coded and compiled, ADR 0004): run `runIde` in
    WebStorm and PhpStorm and check real rendering, the "received Ping" round trip, the navigation
    and popup veto and the "Built-in server" button. Headless tests cannot cover JCEF.
-4. **Define bridge protocol v1** with a validation test suite on both sides.
 
 ## Next: Phase 2
 
 5. JCEF preview tool window replacing the placeholder.
-6. Project-confined source location validator with path traversal and symlink tests.
+6. ~~Project-confined source location validator~~ done with protocol v1 (`ProjectPathResolver`); wire it into navigation in item 8.
 7. Inspector overlay: hover highlight, tooltip, click capture.
 8. Click-to-source navigation for static HTML, with feedback for unmappable elements.
 9. Editor-to-preview highlighting, debounced and configurable.

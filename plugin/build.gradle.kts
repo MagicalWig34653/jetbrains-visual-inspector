@@ -38,3 +38,8 @@ intellijPlatform {
         }
     }
 }
+
+tasks.test {
+    // Shared protocol vectors live outside plugin/ (repo root: test-fixtures/protocol/vectors.json).
+    systemProperty("visualinspector.protocolVectors", rootProject.projectDir.resolve("../test-fixtures/protocol/vectors.json").canonicalPath)
+}

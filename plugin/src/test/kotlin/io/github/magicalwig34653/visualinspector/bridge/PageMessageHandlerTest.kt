@@ -58,4 +58,63 @@ class PageMessageHandlerTest {
         trusted = false
         assertTrue(h.handle("""{"v":1,"type":"hello"}""").contains("denied"))
     }
+
+    private fun code(reply: String) = Regex(""""code":"(\w+)"""").find(reply)?.groupValues?.get(1)
+
+    @Test fun malformedInputIsAnErrorReplyAndNeverOpensAnything() {
+        val dir = tmp.newFolder().toPath()
+        val h = handler(dir)
+        assertEquals("bad_json", code(h.handle(null)))
+        assertEquals("bad_json", code(h.handle("")))
+        assertEquals("bad_json", code(h.handle("[]")))
+        assertEquals("too_large", code(h.handle("x".repeat(5000))))
+        assertEquals("bad_version", code(h.handle("""{"v":2,"type":"hello"}""")))
+        assertEquals("unknown_type", code(h.handle("""{"v":1,"type":"eval","code":"x"}""")))
+        assertEquals("unknown_type", code(h.handle("""{"v":1,"type":"highlight","path":"a.html","offset":1}"""))) // IDE type from the page
+        assertEquals("bad_json", code(h.handle("""{"v":1,"type":"navigate","path":"a.html","path":"b.html","offset":1}""")))
+        assertTrue(opened.isEmpty() && notices.isEmpty())
+    }
+
+    @Test fun helloAcksWithItsIdAndTouchesNothing() {
+        val reply = handler(tmp.newFolder().toPath()).handle("""{"v":1,"type":"hello","id":"h-1"}""")
+        assertEquals("""{"v":1,"type":"ack","ref":"h-1"}""", reply)
+        assertTrue(opened.isEmpty() && notices.isEmpty())
+    }
+
+    @Test fun navigateToDirectoryOrSymlinkEscapeIsAnErrorWithTheRequestId() {
+        val dir = tmp.newFolder().toPath()
+        java.nio.file.Files.createDirectories(dir.resolve("sub"))
+        val outside = tmp.newFolder().toPath().resolve("secret.html").also { java.nio.file.Files.writeString(it, "s") }
+        try { java.nio.file.Files.createSymbolicLink(dir.resolve("leak.html"), outside) } catch (e: UnsupportedOperationException) { return }
+        val h = handler(dir)
+        assertEquals("""{"v":1,"type":"error","code":"not_found","ref":"d1"}""", h.handle("""{"v":1,"type":"navigate","path":"sub","offset":0,"id":"d1"}"""))
+        assertEquals("""{"v":1,"type":"error","code":"denied","ref":"d2"}""", h.handle("""{"v":1,"type":"navigate","path":"leak.html","offset":0,"id":"d2"}"""))
+        assertTrue(opened.isEmpty())
+    }
+
+    @Test fun explicitAncestorNavigationIsConfinedLikeAPageNavigation() {
+        val dir = tmp.newFolder().toPath()
+        val f = dir.resolve("a.html").also { java.nio.file.Files.writeString(it, "<p>") }
+        val h = handler(dir)
+        assertEquals("bad_path", code(h.navigate("../a.html", 0, "x")))
+        assertEquals("not_found", code(h.navigate("none.html", 0, null)))
+        assertTrue(opened.isEmpty())
+        assertEquals("""{"v":1,"type":"ack","ref":"x"}""", h.navigate("a.html", 1, "x"))
+        assertEquals(listOf(f.toRealPath() to 1), opened)
+    }
+
+    @Test fun projectBaseDirIsReadPerMessage() {
+        val dir = tmp.newFolder().toPath()
+        java.nio.file.Files.writeString(dir.resolve("a.html"), "<p>")
+        var base: Path? = null
+        val h = PageMessageHandler({ base }, { f, o -> opened += f to o }, { _, _, _ -> }, { true })
+        assertEquals("not_found", code(h.handle("""{"v":1,"type":"navigate","path":"a.html","offset":0}""")))
+        base = dir
+        assertTrue(h.handle("""{"v":1,"type":"navigate","path":"a.html","offset":0}""").contains("ack"))
+    }
+
+    @Test fun unmappableWithoutAncestorStillNotifiesOnceWithLabel() {
+        handler(tmp.newFolder().toPath()).handle("""{"v":1,"type":"unmappable","tag":"canvas","label":"canvas.chart","id":"u"}""")
+        assertEquals(listOf(Triple("canvas", "canvas.chart" as String?, null as Ancestor?)), notices)
+    }
 }

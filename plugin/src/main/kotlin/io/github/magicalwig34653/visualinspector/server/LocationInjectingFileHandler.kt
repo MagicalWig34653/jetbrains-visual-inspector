@@ -47,7 +47,8 @@ internal class LocationInjectingFileHandler : WebServerFileHandler() {
 
         val (text, relativePath) = runReadActionBlocking {
             val document = FileDocumentManager.getInstance().getCachedDocument(file)
-            val raw = document?.text ?: StringUtil.convertLineSeparators(String(file.contentsToByteArray(), file.charset))
+            // The editor Document has no BOM and LF line separators; offsets must match it, so the disk fallback is normalized the same way.
+            val raw = document?.text ?: StringUtil.convertLineSeparators(String(file.contentsToByteArray(), file.charset).removePrefix("\uFEFF"))
             val base = project.guessProjectDir()
             raw to (base?.let { VfsUtilCore.getRelativePath(file, it) } ?: file.name)
         }

@@ -55,4 +55,42 @@ class TrustedOriginsTest {
         assertTrue(PagePaths.parse(null).isEmpty())
         assertTrue(PagePaths.parse("[\"" + "a".repeat(70000) + "\"]").isEmpty())
     }
+
+    @Test fun hostAndPortSpellingTricksAreNotTrusted() {
+        for (u in listOf("http://LOCALHOST:8000/", "http://localhost:0/", "http://localhost:65536/", "http://[::1]:8000/",
+                         "http://0.0.0.0:8000/", "http://127.1:8000/", "http://localhost:8000@evil.example/", "http://localhost%2eevil:80/")) {
+            assertNull(u, TrustedOrigins.originOf(u))
+        }
+        assertEquals("http://localhost:65535", TrustedOrigins.originOf("http://localhost:65535/"))
+    }
+
+    @Test fun onlyTheCanonicalOriginSpellingCanBeTrusted() {
+        val ok = setOf("http://localhost:8000")
+        for (o in listOf("http://localhost:08000", "http://localhost:8000/", "http://localhost:8000?x", "http://localhost:8000#", "HTTP://localhost:8000", " http://localhost:8000")) {
+            assertFalse(o, TrustedOrigins.isTrusted(o, null, ok))
+            assertNull(o, TrustedOrigins.canonical(o))
+        }
+        assertEquals("http://localhost:80", TrustedOrigins.canonical("http://localhost:80"))
+        assertNull("default-port shorthand is not canonical", TrustedOrigins.canonical("http://localhost"))
+    }
+
+    @Test fun trustingTwiceKeepsOneEntryAndRevokingAnUnknownOriginIsHarmless() {
+        val s = TrustedOriginsService()
+        assertTrue(s.trust("http://localhost:8000"))
+        assertTrue(s.trust("http://localhost:8000"))
+        assertEquals(1, s.state.origins.size)
+        s.revoke("http://localhost:9999")
+        assertEquals(setOf("http://localhost:8000"), s.confirmed())
+    }
+
+    @Test fun pagePathsAreCappedDeduplicatedAndRejectNesting() {
+        val many = (1..300).joinToString(",", "[", "]") { "\"p$it.php\"" }
+        assertEquals(200, PagePaths.parse(many).size)
+        assertEquals(setOf("a.php"), PagePaths.parse("""["a.php","a.php"]"""))
+        assertEquals(setOf("a.php"), PagePaths.parse("""["a.php",["b.php"],{"p":"c.php"}]"""))
+        assertTrue(PagePaths.parse("[").isEmpty())
+        assertTrue(PagePaths.parse("").isEmpty())
+        assertTrue(PagePaths.parse("null").isEmpty())
+        assertTrue(PagePaths.parse("\"a.php\"").isEmpty())
+    }
 }

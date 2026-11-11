@@ -12,7 +12,7 @@ class BridgeMessageValidatorTest {
     @Test fun sharedVectors() {
         val file = File(System.getProperty("visualinspector.protocolVectors") ?: error("system property not set"))
         val vectors = JsonParser.parseString(file.readText()).asJsonObject.getAsJsonArray("vectors")
-        assertEquals(202, vectors.size())
+        assertEquals(207, vectors.size())
         val failures = mutableListOf<String>()
         for (e in vectors) {
             val v = e.asJsonObject

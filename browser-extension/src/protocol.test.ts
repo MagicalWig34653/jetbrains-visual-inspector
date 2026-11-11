@@ -130,3 +130,21 @@ test("error codes list is closed and ends with IDE-only outcomes", () => {
     "bad_json", "too_large", "bad_version", "unknown_type", "unknown_field", "bad_field", "bad_path", "not_found", "denied",
   ]);
 });
+
+// Kotlin (the security boundary) rejects integer-valued fractions, exponents and -0 (docs/protocol.md);
+// the TypeScript parser must reach the same result instead of accepting what JSON.parse normalizes.
+test("integer fields must be integer literals: 1.0, 1e0 and -0 are rejected like on the Kotlin side", () => {
+  assert.deepEqual(parsePageMessage('{"v":1.0,"type":"hello"}'), { ok: false, code: "bad_version" });
+  assert.deepEqual(parsePageMessage('{"v":1e0,"type":"hello"}'), { ok: false, code: "bad_version" });
+  assert.deepEqual(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":10.0}'), { ok: false, code: "bad_field" });
+  assert.deepEqual(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":-0}'), { ok: false, code: "bad_field" });
+  assert.deepEqual(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":1,"index":0,"count":1E0}'), { ok: false, code: "bad_field" });
+  assert.deepEqual(parseIdeMessage('{"v":1,"type":"highlight","path":"a.html","offset":5.0}'), { ok: false, code: "bad_field" });
+});
+
+test("plain integer literals, zero and the maximum offset stay valid", () => {
+  assert.equal(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":0}').ok, true);
+  assert.equal(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":2147483647}').ok, true);
+  // number-looking text inside strings is not a number token
+  assert.equal(parsePageMessage('{"v":1,"type":"navigate","path":"a.html","offset":1,"label":"x 1.0 -0 1e0"}').ok, true);
+});

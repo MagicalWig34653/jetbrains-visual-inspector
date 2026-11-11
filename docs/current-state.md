@@ -109,6 +109,16 @@ offsets come from the file on disk, not the unsaved buffer; a UTF-8 BOM may shif
 rewritten code, so toggling needs a restart. Not yet integrated into the plugin. `./scripts/verify.sh`
 was not re-run.
 
+## Test gap closing (2026-11-11)
+
+Details and the manual `runIde` checklist: `docs/research/test-report.md`. Verified in this session:
+`npm test` 258 of 258, `npm run test:hooks` 57 of 57, `scripts/gradle-docker.sh test verifyPlugin
+--rerun-tasks` 85 of 85 Kotlin tests with the Verifier Compatible for both products, `php-support/tests/check.sh`
+PASS. Two bugs found by new tests and fixed: the TS validator accepted `1.0` (now aligned with Kotlin and
+the spec, vectors 202 to 207) and a UTF-8 BOM shifted offsets by one for files not open in an editor.
+Not testable headlessly: `PreviewPanel`/JCEF, `InspectorActions`, `IdeBridgeSupport`.
+`./scripts/verify.sh` and CI were not run.
+
 ## PHP in the preview (2026-11-08)
 
 Coded (ADR 0010, `docs/php.md`): external localhost origins run the overlay only after the user

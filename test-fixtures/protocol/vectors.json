@@ -1397,6 +1397,41 @@
    "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":[\"a.html\"],\"offset\":10}",
    "valid": false,
    "code": "bad_field"
+  },
+  {
+   "name": "version integer-valued fraction 1.0",
+   "direction": "page",
+   "raw": "{\"v\":1.0,\"type\":\"hello\"}",
+   "valid": false,
+   "code": "bad_version"
+  },
+  {
+   "name": "offset integer-valued fraction 10.0",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":10.0}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "offset negative zero",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":-0}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "count exponent form 1E0",
+   "direction": "page",
+   "raw": "{\"v\":1,\"type\":\"navigate\",\"path\":\"a.html\",\"offset\":1,\"index\":0,\"count\":1E0}",
+   "valid": false,
+   "code": "bad_field"
+  },
+  {
+   "name": "highlight offset fraction 5.0",
+   "direction": "ide",
+   "raw": "{\"v\":1,\"type\":\"highlight\",\"path\":\"a.html\",\"offset\":5.0}",
+   "valid": false,
+   "code": "bad_field"
   }
  ]
 }

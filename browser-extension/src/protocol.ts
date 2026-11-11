@@ -158,6 +158,20 @@ function checkField(field: Field, obj: Record<string, unknown>): ParseErrorCode 
   }
 }
 
+const INTEGER_LITERAL = /^-?(0|[1-9][0-9]*)$/;
+
+/**
+ * Kotlin treats `1.0`, `1e0` and `-0` as non-integers; `JSON.parse` would normalize them to integers.
+ * A number whose source text is not a plain integer literal becomes `null` (a non-integer for every
+ * field check). Engines without JSON source text access (`context.source`) keep the lenient behavior;
+ * the Kotlin validator is the security boundary.
+ */
+function strictIntegerReviver(_key: string, value: unknown, context?: { source?: string }): unknown {
+  if (typeof value !== "number") return value;
+  const source = context?.source;
+  return source === undefined || (INTEGER_LITERAL.test(source) && source !== "-0") ? value : null;
+}
+
 function parseWith<T>(raw: unknown, shapes: Record<string, Shape>): ParseResult<T> {
   const fail = (code: ParseErrorCode): ParseResult<T> => ({ ok: false, code });
   try {
@@ -165,7 +179,7 @@ function parseWith<T>(raw: unknown, shapes: Record<string, Shape>): ParseResult<
     if (raw.length > LIMITS.maxMessageChars) return fail("too_large");
     let parsed: unknown;
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw, strictIntegerReviver);
     } catch {
       return fail("bad_json");
     }

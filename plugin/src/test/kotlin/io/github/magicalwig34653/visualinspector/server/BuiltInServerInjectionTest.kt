@@ -154,4 +154,154 @@ class BuiltInServerInjectionTest : HeavyPlatformTestCase() {
             assertTrue(css.type!!.startsWith("text/css"))
         } finally { PreviewGate.revoke(token) }
     }
+
+    // --- handler edge cases -------------------------------------------------------------------------------
+
+    private fun createFile(name: String, bytes: ByteArray): com.intellij.openapi.vfs.VirtualFile =
+        WriteCommandAction.writeCommandAction(project).compute<com.intellij.openapi.vfs.VirtualFile, Exception> {
+            val dir = VfsUtil.createDirectoryIfMissing(project.basePath!!)!!
+            if (com.intellij.openapi.roots.ModuleRootManager.getInstance(module).contentRoots.none { it == dir }) {
+                com.intellij.testFramework.PsiTestUtil.addContentRoot(module, dir)
+            }
+            dir.createChildData(this, name).also { it.setBinaryContent(bytes) }
+        }
+
+    private fun fileUrl(name: String) = site(name)
+
+    /** Authed + preview-token URL for another file name. */
+    private fun previewUrl(name: String, token: String) = url(true, token).replace("index.html", name)
+
+    private fun request(url: String, method: String): Pair<HttpURLConnection, ByteArray> {
+        val c = URI(url).toURL().openConnection() as HttpURLConnection
+        c.requestMethod = method
+        val code = c.responseCode
+        return c to ((if (code < 400) c.inputStream else c.errorStream)?.readBytes() ?: ByteArray(0))
+    }
+
+    fun testHeadRequestHasHeadersAndNoBody() {
+        createFile("index.html", fixture.toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (get, getBody) = request(url(true, token), "GET")
+            val (head, headBody) = request(url(true, token), "HEAD")
+            assertEquals(200, head.responseCode)
+            assertEquals(0, headBody.size)
+            assertEquals("same Content-Length as GET", getBody.size, head.contentLength)
+            assertEquals(get.contentLength, head.contentLength)
+            assertTrue(head.contentType.startsWith("text/html"))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testResponseIsNotCachedAndSetsTheGateCookieHttpOnly() {
+        createFile("index.html", fixture.toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (c, _) = request(url(true, token), "GET")
+            assertEquals("no-cache, no-store", c.getHeaderField("Cache-Control"))
+            val cookies = c.headerFields.filterKeys { it.equals("Set-Cookie", true) }.values.flatten()
+            val gate = cookies.single { it.startsWith("${PreviewGate.PARAM}=") }
+            assertTrue(gate, gate.contains("HttpOnly") && gate.contains("SameSite=Strict"))
+            assertTrue("the platform auth cookie must survive next to the gate cookie", cookies.size >= 2)
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testContentLengthMatchesBodyForMultibyteContent() {
+        val text = "<html><body><p>ü ö 日本語 \uD83D\uDE00</p></body></html>"
+        createFile("index.html", text.toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (c, body) = request(url(true, token), "GET")
+            assertEquals(body.size, c.contentLength)
+            assertTrue(String(body).contains("<p data-vi-src=\"index.html:") && String(body).contains("ü ö 日本語 \uD83D\uDE00"))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testCrlfFileGetsOffsetsOfTheNormalizedDocumentText() {
+        val crlf = "<html>\r\n<body>\r\n<p>x</p>\r\n</body>\r\n</html>\r\n"
+        val file = createFile("index.html", crlf.toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (_, body) = request(url(true, token), "GET")
+            val doc = FileDocumentManager.getInstance().getDocument(file)!!
+            val psi = PsiDocumentManager.getInstance(project).getPsiFile(doc)!!
+            val expected = PsiTreeUtil.findChildrenOfType(psi, XmlTag::class.java).map { it.name to it.textRange.startOffset }.sortedBy { it.second }
+            val actual = attr.findAll(String(body)).map { it.groupValues[1] to it.groupValues[3].toInt() }.toList()
+            assertEquals("offsets must be the editor's (LF-normalized) offsets, not raw byte offsets", expected, actual)
+            assertTrue("CRLF is normalized in the served text", !String(body).contains("\r"))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testFileWithByteOrderMarkIsServedAndMapped() {
+        val bom = byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()) + "<html><body><p>x</p></body></html>".toByteArray()
+        val file = createFile("index.html", bom)
+        val token = PreviewGate.newToken()
+        try {
+            val (status, body) = request(url(true, token), "GET").let { it.first.responseCode to String(it.second) }
+            assertEquals(200, status)
+            val doc = FileDocumentManager.getInstance().getDocument(file)!!
+            val psi = PsiDocumentManager.getInstance(project).getPsiFile(doc)!!
+            val expected = PsiTreeUtil.findChildrenOfType(psi, XmlTag::class.java).map { it.name to it.textRange.startOffset }.sortedBy { it.second }
+            assertEquals(expected, attr.findAll(body).map { it.groupValues[1] to it.groupValues[3].toInt() }.toList())
+            assertEquals("<p>", doc.text.substring(expected.first { it.first == "p" }.second).take(3))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testHtmExtensionAndUppercaseExtensionAreInjected() {
+        createFile("page.htm", "<p>a</p>".toByteArray())
+        createFile("UP.HTML", "<p>b</p>".toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            assertTrue(String(request(previewUrl("page.htm", token), "GET").second).contains("data-vi-src=\"page.htm:0\""))
+            assertTrue(String(request(previewUrl("UP.HTML", token), "GET").second).contains("data-vi-src=\"UP.HTML:0\""))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testNonHtmlFileFallsThroughUnmodifiedEvenWithToken() {
+        val js = "var x = '<p>not html</p>';\n"
+        createFile("app.js", js.toByteArray())
+        createFile("data.json", "{\"a\":\"<p>\"}".toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            assertEquals(js, String(request(previewUrl("app.js", token), "GET").second))
+            assertEquals("{\"a\":\"<p>\"}", String(request(previewUrl("data.json", token), "GET").second))
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testMissingFileIsNotFoundAndGetsNoInjectionOrGateCookie() {
+        createFile("index.html", fixture.toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (c, body) = request(previewUrl("nope.html", token), "GET")
+            assertEquals(404, c.responseCode)
+            assertFalse(String(body).contains("data-vi-src"))
+            assertTrue(c.headerFields.filterKeys { it.equals("Set-Cookie", true) }.values.flatten().none { it.startsWith("${PreviewGate.PARAM}=") })
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testLargeHtmlFileIsServedCompleteWithCorrectLength() {
+        val sb = StringBuilder("<html><body>")
+        repeat(20_000) { sb.append("<p>line ").append(it).append("</p>\n") }
+        sb.append("</body></html>")
+        createFile("index.html", sb.toString().toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            val (c, body) = request(url(true, token), "GET")
+            assertEquals(200, c.responseCode)
+            assertEquals(body.size, c.contentLength)
+            assertEquals(20_000, Regex("data-vi-src=\"index.html:").findAll(String(body)).count() - 2) // + html and body
+        } finally { PreviewGate.revoke(token) }
+    }
+
+    fun testEditAfterFirstRequestIsReflectedOnTheNext() {
+        val file = createFile("index.html", "<p>one</p>".toByteArray())
+        val token = PreviewGate.newToken()
+        try {
+            assertTrue(String(request(url(true, token), "GET").second).contains("one"))
+            val doc = FileDocumentManager.getInstance().getDocument(file)!!
+            WriteCommandAction.runWriteCommandAction(project) { doc.setText("<div><p>two</p></div>") }
+            val second = String(request(url(true, token), "GET").second)
+            assertTrue(second.contains("two") && !second.contains("one"))
+            assertTrue("offset of the inner <p> follows the unsaved edit", second.contains("<p data-vi-src=\"index.html:5\""))
+        } finally { PreviewGate.revoke(token) }
+    }
 }
